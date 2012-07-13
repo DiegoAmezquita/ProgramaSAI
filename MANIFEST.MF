@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: Interfaz.FrameLogin
+Class-Path: ../lib/iText-5.0.6.jar ../lib/mysql-connector-java-5.0.8.jar
+
+

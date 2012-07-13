@@ -1,0 +1,27 @@
+Realizar este insert para que si se agrega un producto durante una facturacion quede asociado a una factura
+donde el proveedor es sai.
+
+INSERT INTO `saicomco`.`facturacompra` (
+`idFacturaCompra` ,
+`fecha` ,
+`fechaIngreso` ,
+`idproveedor` ,
+`numero` 
+)
+VALUES (
+'1', '2012-03-26 10:21:54', '2012-03-19 00:00:00', '2780', '0'
+)
+
+
+
+
+- POR RESOLVER
+- Como apartar los numeros de serie de las facturas de venta?
+- Como apartar los articulos cuando se estan facturando?
+
+
+
+
+
+Actualizar las observaciones al borrar un item en facturacion.
+

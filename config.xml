@@ -1,0 +1,17 @@
+<Configuracion>
+
+<mysql>
+
+<host>192.168.1.142</host>
+
+<nombre>admonSAI</nombre>
+
+<usuario>root</usuario>
+
+<clave>ines</clave>
+
+</mysql>
+
+
+
+</Configuracion>
