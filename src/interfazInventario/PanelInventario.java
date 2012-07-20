@@ -1,31 +1,23 @@
 package interfazInventario;
 
 import Codigo.Articulo;
-import Codigo.Datos;
 import Codigo.FacturaCompra;
-import Codigo.Persona;
 import Codigo.Producto;
 import Codigo.Sitio;
 import DAO.DAOArticulo;
 import DAO.DAOFacturaCompra;
-import DAO.DAOOpcion;
 import DAO.DAOPersona;
 import DAO.DAOProducto;
 import DAO.DAOSitio;
 import DAO.DAOvarios;
-import Interfaz.DatosCellRenderer;
 import Interfaz.FrameMain;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.ParseException;
@@ -35,17 +27,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -54,11 +41,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.TableColumn;
 
@@ -124,6 +109,8 @@ public class PanelInventario extends JPanel implements MouseListener {
 	private int idFacturaGuarda = 0;
 	private Map listaArticulosMostrar;
 
+	private ArrayList<ItemInventario> listaItemsInventario;
+
 	private JLabel labelProveedorSeleccionado;
 	private PanelNumeroSerie panelNumeroSerie;
 	private Articulo articuloEdicion;
@@ -151,44 +138,44 @@ public class PanelInventario extends JPanel implements MouseListener {
 				"NO HA SELECCIONADO UN PROVEEDOR");
 		labelProveedorSeleccionado.setBounds(90, 20, 720, 30);
 		add(labelProveedorSeleccionado);
-		
-		labelInfoProveedor  = new JLabel("<html><font color='red'>info</font> </html>");
+
+		labelInfoProveedor = new JLabel(
+				"<html><font color='red'>info</font> </html>");
 		labelInfoProveedor.setBounds(350, 20, 50, 30);
 		labelInfoProveedor.addMouseListener(new MouseListener() {
-			
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				crearDialogoInformacionCliente();
-				
+
 			}
 		});
 		labelInfoProveedor.setVisible(false);
 		add(labelInfoProveedor);
-		
 
 		buttonSearchProveedor = new JButton("BUSCAR PROVEEDOR");
 		buttonSearchProveedor.setBounds(470, 20, 160, 30);
@@ -252,6 +239,8 @@ public class PanelInventario extends JPanel implements MouseListener {
 			}
 		});
 		add(buttonSearchProducto);
+
+		listaItemsInventario = new ArrayList<ItemInventario>();
 
 		crearPanelInfoFactura();
 		// crearPanelInfoProducto();
@@ -333,7 +322,7 @@ public class PanelInventario extends JPanel implements MouseListener {
 			@Override
 			public void focusGained(FocusEvent arg0) {
 				if (!campoFechaFactura.getText().equals("")) {
-					//cargarFecha(campoFechaFactura);
+					// cargarFecha(campoFechaFactura);
 				}
 			}
 
@@ -460,8 +449,8 @@ public class PanelInventario extends JPanel implements MouseListener {
 		campoTotal.setEnabled(false);
 		panelCostoFactura.add(campoTotal);
 	}
-	
-	public void crearDialogoInformacionCliente(){
+
+	public void crearDialogoInformacionCliente() {
 		dialogoInformacionProveedor = new JDialog(frameMain);
 		dialogoInformacionProveedor.setLocationRelativeTo(null);
 		dialogoInformacionProveedor.setSize(300, 300);
@@ -512,48 +501,73 @@ public class PanelInventario extends JPanel implements MouseListener {
 		System.out.println("TERMINA REVISION");
 	}
 
+	public ItemInventario buscarItemInventario(int idProducto) {
+		for (int i = 0; i < listaItemsInventario.size(); i++) {
+			if (listaItemsInventario.get(i).getProducto().getIdProducto() == idProducto) {
+				return listaItemsInventario.get(i);
+			}
+		}
+		return null;
+	}
+
 	public void agregarArticuloFactura(Producto producto, String numeroSerie,
 			int cantidad) {
-		Articulo articulo = new Articulo();
-		articulo.setIdProveedor(idProveedorCargado + "");
-		articulo.setIdProductoArticulo(producto.getIdProducto());
-		idSitioCargado = comboBoxSitios.getSelectedIndex() + 1;
-		articulo.setIdSitio(idSitioCargado + "");
-		if (producto.getTieneSerial() == 0) {
-			articulo.setNumeroSerie("0");
-		} else {
-			articulo.setNumeroSerie(numeroSerie);
-		}
-		articulo.setEstado(0);
-		articulo.setCostoArticulo(producto.getCostoProducto());
 
-		if (listaArticulosMostrar.get(producto.getIdProducto()) != null) {
-			int tempo = Integer.parseInt(listaArticulosMostrar
-					.get(producto.getIdProducto()) + "");
-			if (producto.getTieneSerial() == 0) {
-				listaArticulosMostrar.put(producto.getIdProducto(), tempo + 1);
-			} else {
-				articulosFactura.add(articulo);
-				listaArticulosMostrar.put(producto.getIdProducto(), cantidad);
-				int tamanio = retornarSeriales(producto.getIdProducto()).size();
-				listaArticulosMostrar.put(producto.getIdProducto(), tamanio);
+		ItemInventario
 
+		itemTemporal = buscarItemInventario(producto.getIdProducto());
+
+		if (itemTemporal == null) {
+			itemTemporal = new ItemInventario();
+
+			if (producto.getTieneSerial() == 1) {
+				itemTemporal.getSeriales().add(numeroSerie);
 			}
+			itemTemporal.setNumero(listaItemsInventario.size() + 1);
+			itemTemporal.setCantidad(1);
+			itemTemporal.setProducto(producto);
+
+			String mostrar = daoVarios.consultarVariosPorCategoriaNivel2(
+					"Tipo de Elemento", producto.getIdCategoriaProducto())
+					+ " "
+					+ daoVarios.consultarVariosPorCategoriaNivel2(
+							"Marca Elemento", producto.getIdMarcaProducto())
+					+ " " + producto.getDescripcionProducto();
+
+			itemTemporal.setDescripcion(mostrar);
+			itemTemporal.setCostoUnitario(producto.getCostoProducto());
+
+			int costo = producto.getCostoProducto() * cantidad;
+
+			modeloTablaArticulos.addRow(new String[] {
+					itemTemporal.getNumero() + "",
+					mostrar,
+					cantidad + "",
+					costo + "",
+					producto.getExistenciasProducto() + "",
+					producto.getPrecioProducto() + "",
+					calcularPrecioSugerido(Integer.parseInt(costo + ""),
+							producto) + "", itemTemporal.getPrecio() + "",
+					producto.getIdProducto() + "" });
+
+			listaItemsInventario.add(itemTemporal);
+
 		} else {
-			if (producto.getTieneSerial() == 0) {
-				listaArticulosMostrar.put(producto.getIdProducto(), 1);
-			} else {
-
-				articulosFactura.add(articulo);
-				listaArticulosMostrar.put(producto.getIdProducto(), cantidad);
-				int tamanio = retornarSeriales(producto.getIdProducto()).size();
-				listaArticulosMostrar.put(producto.getIdProducto(), tamanio);
+			listaItemsInventario.remove(itemTemporal.getNumero() - 1);
+			if (producto.getTieneSerial() == 1) {
+				itemTemporal.getSeriales().add(numeroSerie);
 			}
-		}
-		actualizarTabla();
+			itemTemporal.setCantidad(itemTemporal.getCantidad() + 1);
+			listaItemsInventario
+					.add(itemTemporal.getNumero() - 1, itemTemporal);
 
+			System.out.println("A COLOCAR LA CANTIDAD DE "
+					+ itemTemporal.getCantidad());
+			modeloTablaArticulos.cambiarCantidadPermitido(
+					itemTemporal.getCantidad(), itemTemporal.getNumero() - 1);
+		}
 		colocarNumeroSerieObservaciones();
-
+		calcularTotalFacturaInventario();
 	}
 
 	public ArrayList<String> retornarSeriales(int idProducto) {
@@ -568,29 +582,19 @@ public class PanelInventario extends JPanel implements MouseListener {
 	}
 
 	public void colocarNumeroSerieObservaciones() {
-		Iterator it = listaArticulosMostrar.entrySet().iterator();
 		String mostrar = "";
-		int contador = 1;
-		ArrayList<String> tempo;
-		areaObservaciones.setText("");
-		while (it.hasNext()) {
-			Map.Entry e = (Map.Entry) it.next();
-			if (daoProducto.buscarPorCodigo(Integer.parseInt(e.getKey() + ""))
-					.getTieneSerial() == 1) {
-				mostrar = mostrar + "   Item " + contador + ": ";
-				tempo = retornarSeriales(Integer.parseInt(e.getKey() + ""));
-				cambiarCantidadEdicion(Integer.parseInt(e.getKey() + ""),
-						tempo.size());
-				System.out.println("ACA ESTA LA PRUEBA: " + tempo.size());
-				for (int i = 0; i < tempo.size(); i++) {
-					mostrar = mostrar + tempo.get(i) + ",";
+		for (int i = 0; i < listaItemsInventario.size(); i++) {
+			if (listaItemsInventario.get(i).getSeriales().size() > 0) {
+				mostrar += " Item " + (i + 1) + ": ";
+				for (int j = 0; j < listaItemsInventario.get(i).getSeriales()
+						.size(); j++) {
+					mostrar += listaItemsInventario.get(i).getSeriales().get(j)
+							+ ", ";
 				}
 			}
-			// daoProducto.cambiarExistencias(e.getKey() + "", e.getValue() +
-			// "");
-			contador++;
 		}
 		areaObservaciones.setText(mostrar);
+
 	}
 
 	public void cambiarCantidadEdicion(int idProducto, int cantidad) {
@@ -603,11 +607,8 @@ public class PanelInventario extends JPanel implements MouseListener {
 		}
 	}
 
-	public void actualizarTabla() {
+	public void actualizarTabla1() {
 
-		// while (modeloTablaArticulos.getRowCount() != 0) {
-		// modeloTablaArticulos.removeRow(0);
-		// }
 		Iterator it = listaArticulosMostrar.entrySet().iterator();
 		String mostrar = "";
 		int contador = 1;
@@ -632,12 +633,17 @@ public class PanelInventario extends JPanel implements MouseListener {
 				}
 			}
 			if (!existeProductoFactura(mostrar)) {
-				modeloTablaArticulos.addRow(new String[] { contador + "",
-						mostrar, e.getValue() + "", costo,
-						product.getExistenciasProducto() + "",
-						product.getPrecioProducto() + "",
-						calcularPrecioSugerido(Integer.parseInt(costo+""),product) + "", "",
-						product.getIdProducto() + "" });
+				modeloTablaArticulos
+						.addRow(new String[] {
+								contador + "",
+								mostrar,
+								e.getValue() + "",
+								costo,
+								product.getExistenciasProducto() + "",
+								product.getPrecioProducto() + "",
+								calcularPrecioSugerido(
+										Integer.parseInt(costo + ""), product)
+										+ "", "", product.getIdProducto() + "" });
 			}
 			contador++;
 		}
@@ -653,11 +659,7 @@ public class PanelInventario extends JPanel implements MouseListener {
 		precioSugerido = (int) (precioSugerido
 				* (1 + (producto.getIvaProducto() / 100)) * (1 + (producto
 				.getMargenProducto() / 100)));
-		System.out
-				.println("NUEVOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO "
-						+ precioSugerido);
 		modeloTablaArticulos.setValueAt(precioSugerido, row, 6);
-		actualizarTabla();
 
 	}
 
@@ -680,11 +682,13 @@ public class PanelInventario extends JPanel implements MouseListener {
 	}
 
 	public boolean cambiarExistenciasTabla(int row, int valor, boolean interno) {
-		int codigo = Integer.parseInt(modeloTablaArticulos.getValueAt(row, 8)
-				+ "");
-		if (daoProducto.buscarPorCodigo(codigo).getTieneSerial() == 0) {
-			listaArticulosMostrar.put(codigo, valor);
-		} else {
+
+		ItemInventario itemTempo = listaItemsInventario.get(row);
+		listaItemsInventario.remove(row);
+		itemTempo.setCantidad(valor);
+		listaItemsInventario.add(row, itemTempo);
+
+		if (itemTempo.getProducto().getTieneSerial() == 1) {
 			if (!interno) {
 				JOptionPane
 						.showMessageDialog(null,
@@ -693,7 +697,6 @@ public class PanelInventario extends JPanel implements MouseListener {
 			}
 		}
 
-		actualizarTabla();
 		return true;
 	}
 
@@ -732,13 +735,36 @@ public class PanelInventario extends JPanel implements MouseListener {
 
 	public void agregarArticulos() {
 		Articulo articuloTemporal;
-		int ultimoArticulo = 0;
-		for (int i = 0; i < articulosFactura.size(); i++) {
-			articuloTemporal = articulosFactura.get(i);
-			ultimoArticulo = articuloTemporal.getIdProductoArticulo();
+		String idSitio = daoSitio.consultar(
+				(comboBoxSitios.getSelectedItem() + "")).getIdSitio()
+				+ "";
 
+		for (int i = 0; i < listaItemsInventario.size(); i++) {
+			ItemInventario itemTempo = listaItemsInventario.get(i);
+			articuloTemporal = new Articulo();
 			articuloTemporal.setIdDocumentoSoporte(idFacturaGuarda + "");
-			daoArticulo.insert(articuloTemporal);
+			articuloTemporal.setCostoArticulo(itemTempo.getCostoUnitario());
+			articuloTemporal.setFechaIngreso(campoFechaIngreso.getText());
+			articuloTemporal.setIdProductoArticulo(itemTempo.getProducto()
+					.getIdProducto());
+			articuloTemporal.setIdProveedor(idProveedorCargado + "");
+			articuloTemporal.setIdSitio(idSitio);
+			daoProducto.cambiarCosto(itemTempo.getProducto().getIdProducto()
+					+ "", itemTempo.getCostoUnitario() + "");
+			if (itemTempo.getPrecio() != 0) {
+				daoProducto.cambiarPrecio(itemTempo.getProducto()
+						.getIdProducto() + "", itemTempo.getPrecio() + "");
+			} else {
+				daoProducto.cambiarPrecio(itemTempo.getProducto()
+						.getIdProducto() + "", itemTempo.getPrecioSugerido()
+						+ "");
+			}
+			for (int j = 0; j < itemTempo.getSeriales().size(); j++) {
+				articuloTemporal.setNumeroSerie(itemTempo.getSeriales().get(j));
+				daoArticulo.insert(articuloTemporal);
+			}
+			daoProducto.cambiarExistencias(itemTempo.getProducto()
+					.getIdProducto(), itemTempo.getCantidad());
 		}
 
 		// FacturaCompra facturaTemporal = daoFacturaCompra.consultar(idFactura)
@@ -770,42 +796,26 @@ public class PanelInventario extends JPanel implements MouseListener {
 
 	public void calcularTotalFacturaInventario() {
 		int precio = 0;
-		for (int i = 0; i < modeloTablaArticulos.getRowCount(); i++) {
-			precio += ((Integer.parseInt(modeloTablaArticulos.getValueAt(i, 2)
-					+ "") * Integer.parseInt(modeloTablaArticulos.getValueAt(i,
-					3) + "")));
+		HashMap<Float, Integer> listaBases = new HashMap<Float, Integer>();
+		for (int i = 0; i < listaItemsInventario.size(); i++) {
+			ItemInventario itemTempo = listaItemsInventario.get(i);
+			precio += itemTempo.cantidad * itemTempo.getCostoUnitario();
+			int costoBase = (int) (((itemTempo.getCostoUnitario() * (itemTempo
+					.getProducto().getIvaProducto() / 100)) * itemTempo
+					.getCantidad()));
+			if (listaBases.get(itemTempo.getProducto().getIvaProducto()) != null) {
+				listaBases.put(
+						itemTempo.getProducto().getIvaProducto(),
+						listaBases
+								.get(itemTempo.getProducto().getIvaProducto())
+								+ costoBase);
+			} else {
+				listaBases.put(itemTempo.getProducto().getIvaProducto(),
+						costoBase);
+			}
 		}
 		campoSubtotal.setText(precio + "");
-
 		precio = 0;
-		Iterator it = listaArticulosMostrar.entrySet().iterator();
-		int contador = 0;
-		HashMap<Float, Integer> listaBases = new HashMap<Float, Integer>();
-		while (it.hasNext()) {
-			Map.Entry e = (Map.Entry) it.next();
-			Producto product = daoProducto.buscarPorCodigo(Integer.parseInt(e
-					.getKey() + ""));
-			if (product.getIvaProducto() > 0) {
-				// int costoBase = Integer.parseInt(modeloTablaArticulos
-				// .getValueAt(contador, 3) + "")
-				// * Integer.parseInt(modeloTablaArticulos.getValueAt(
-				// contador, 2) + "");
-				int costoBase = (int) (Integer.parseInt(modeloTablaArticulos
-						.getValueAt(contador, 3) + "") * (product
-						.getIvaProducto() / 100))
-						* Integer.parseInt(modeloTablaArticulos.getValueAt(
-								contador, 2) + "");
-				if (listaBases.get(product.getIvaProducto()) != null) {
-					listaBases.put(product.getIvaProducto(),
-							listaBases.get(product.getIvaProducto())
-									+ costoBase);
-				} else {
-					listaBases.put(product.getIvaProducto(), costoBase);
-				}
-
-			}
-			contador++;
-		}
 		defaultlistaBase.removeAllElements();
 		Iterator itu = listaBases.entrySet().iterator();
 		while (itu.hasNext()) {
@@ -821,41 +831,58 @@ public class PanelInventario extends JPanel implements MouseListener {
 
 	}
 
-	public void eliminarArticulo(int row) {
-		System.out.println("ELIMINANDO " + row);
-		listaArticulosMostrar.remove(Integer.parseInt(modeloTablaArticulos
-				.getValueAt(row, 8) + ""));
+	public void cambiarDatoItemInventario(int dato, int row, int column) {
+		ItemInventario tempo = listaItemsInventario.get(row);
+		listaItemsInventario.remove(row);
+		switch (column) {
+		case 2:
+			tempo.setCantidad(dato);
+			break;
+		case 3:
+			tempo.setCostoUnitario(dato);
+			break;
+		case 6:
+			tempo.setPrecioSugerido(dato);
+			break;
+		case 7:
+			tempo.setPrecio(dato);
+			break;
 
-		for (int i = 0; i < articulosFactura.size(); i++) {
-			if (articulosFactura.get(i).getIdProductoArticulo() == Integer
-					.parseInt(modeloTablaArticulos.getValueAt(row, 8) + "")) {
-				articulosFactura.remove(i);
-				i = -1;
-			}
 		}
+		listaItemsInventario.add(row, tempo);
+
+	}
+
+	public void actualizarNumeroItem() {
+		for (int i = 0; i < listaItemsInventario.size(); i++) {
+			ItemInventario itemTempo = listaItemsInventario.get(i);
+			listaItemsInventario.remove(i);
+			itemTempo.setNumero(i + 1);
+			listaItemsInventario.add(itemTempo);
+			modeloTablaArticulos.setValueAt(i + 1, i, 0);
+		}
+	}
+
+	public void eliminarArticulo(int row) {
 		modeloTablaArticulos.removeRow(row);
+		listaItemsInventario.remove(row);
 		colocarNumeroSerieObservaciones();
-		// tablaArticulos.remove(row);
-		actualizarTabla();
+		actualizarNumeroItem();
+		calcularTotalFacturaInventario();
 
 	}
 
 	public void editarArticulo(int row) {
-
-		if (daoProducto.buscarPorCodigo(
-				Integer.parseInt(modeloTablaArticulos.getValueAt(row, 8) + ""))
-				.getTieneSerial() == 1) {
-			setIdProductoCargado(Integer.parseInt(modeloTablaArticulos
-					.getValueAt(row, 8) + ""));
-			panelNumeroSerie = new PanelNumeroSerie(this);
+		ItemInventario itemTempo = listaItemsInventario.get(row);
+		if (itemTempo.getProducto().getTieneSerial() == 1) {
+			setIdProductoCargado(itemTempo.getProducto().getIdProducto());
+			panelNumeroSerie = new PanelNumeroSerie(this,itemTempo.getSeriales());
 			panelNumeroSerie.setVisible(true);
 			panelNumeroSerie.setEstadoEdicion(true);
-			panelNumeroSerie.cargarNumerosSerie(retornarSeriales(Integer
-					.parseInt(modeloTablaArticulos.getValueAt(row, 8) + "")));
+//			panelNumeroSerie.cargarNumerosSerie(itemTempo.getSeriales());
 		} else {
 			JOptionPane.showMessageDialog(null, "NO HAY NADA QUE EDITAR");
 		}
-		actualizarTabla();
 
 	}
 
@@ -916,8 +943,6 @@ public class PanelInventario extends JPanel implements MouseListener {
 																	// el menu
 		}
 	}
-	
-	
 
 	public JLabel getLabelInfoProveedor() {
 		return labelInfoProveedor;

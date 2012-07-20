@@ -91,7 +91,7 @@ public class FrameMain extends JFrame implements ActionListener,
 	public FrameMain(String usuario) {
 
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		setSize(d.width, 600);
+		setSize(d.width, 950);
 		// setSize(1100, 800);
 		GroupLayout layout = new GroupLayout(getContentPane());
 		setLayout(layout);

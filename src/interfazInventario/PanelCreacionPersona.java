@@ -2,7 +2,6 @@ package interfazInventario;
 
 import Codigo.Datos;
 import Codigo.Persona;
-import Codigo.Producto;
 import DAO.DAOPersona;
 import DAO.DAOvarios;
 import Interfaz.DatosCellRenderer;
@@ -30,8 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 public class PanelCreacionPersona extends JDialog {
 
@@ -42,7 +39,6 @@ public class PanelCreacionPersona extends JDialog {
 	private JList listResultProveedor;
 	private JScrollPane scrollPaneResultProveedor;
 	private DAOvarios daoVarios;
-	private int personLoad;
 	private DAOPersona daoPersona;
 	int distancia = 30;
 	int tamanioY = 25;
