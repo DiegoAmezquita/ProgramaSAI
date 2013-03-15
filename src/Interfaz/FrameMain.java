@@ -3,6 +3,7 @@ package Interfaz;
 import Codigo.Contacto;
 import Codigo.Detalle;
 import Codigo.Datos;
+import Codigo.InfoPrograma;
 import Codigo.Login;
 import Codigo.OrdenServicio;
 import Codigo.Persona;
@@ -59,6 +60,10 @@ import javax.swing.event.ListSelectionListener;
 public class FrameMain extends JFrame implements ActionListener,
 		ListSelectionListener, ItemListener {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	JDesktopPane escritorio;
 	private JMenuBar menuBar;
 	private JMenu menu;
@@ -94,9 +99,10 @@ public class FrameMain extends JFrame implements ActionListener,
 		setSize(d.width, 950);
 		// setSize(1100, 800);
 		GroupLayout layout = new GroupLayout(getContentPane());
-		setLayout(layout);
+		setLayout(layout);		
 		escritorio = new JDesktopPane();
 		escritorio.setLayout(null);
+		setTitle(InfoPrograma.version+" "+InfoPrograma.fechaCompilacion);
 		layout.setHorizontalGroup(layout.createParallelGroup(
 				GroupLayout.Alignment.LEADING).addComponent(escritorio,
 				GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE));
@@ -119,7 +125,7 @@ public class FrameMain extends JFrame implements ActionListener,
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent we) {
 				int eleccion = JOptionPane.showConfirmDialog(null,
-						"ÀEsta seguro que desea salir?");
+						"¿Esta seguro que desea salir?");
 				if (eleccion == 0) {
 					System.exit(0);
 				}
@@ -166,7 +172,7 @@ public class FrameMain extends JFrame implements ActionListener,
 	public void crearFrameFacturacion(int operacion, int idFactura) {
 		JInternalFrame ventanaInterna = new JInternalFrame("Facturacion", true,
 				true, true, true);
-		ventanaInterna.setBounds(0, 0, 1024, 768);
+		ventanaInterna.setBounds(0, 0, 1024, 708);
 		escritorio.add(ventanaInterna, JLayeredPane.DEFAULT_LAYER);
 		ventanaInterna.setVisible(true);
 		ventanaInterna.setLayout(null);
@@ -194,7 +200,7 @@ public class FrameMain extends JFrame implements ActionListener,
 	public void crearFrameInventario() {
 		JInternalFrame ventanaInterna = new JInternalFrame("Inventario", true,
 				true, true, true);
-		ventanaInterna.setBounds(0, 0, 1024, 768);
+		ventanaInterna.setBounds(0, 0, 1024, 708);
 		escritorio.add(ventanaInterna, JLayeredPane.DEFAULT_LAYER);
 		ventanaInterna.setVisible(true);
 		ventanaInterna.setLayout(null);
@@ -393,13 +399,6 @@ public class FrameMain extends JFrame implements ActionListener,
 			}
 		}
 
-		if (command.equals("SELECCIONARNUMERODESERIE")) {
-			panelFacturacion.cargarProductoNumeroSerie();
-		}
-
-		if (command.equals("CANCELARSELECCIONNUMERODESERIE")) {
-			panelFacturacion.ocultarSeleccionNumeroSerie();
-		}
 
 		if (command.equals("NUEVAPERSONA")) {
 			System.out.println("NUEVA PERSONA");
@@ -1211,11 +1210,11 @@ public class FrameMain extends JFrame implements ActionListener,
 				panelResultProduct.getPanelImagenProducto().cargarImagenes();
 				String mostrar = daoVarios.consultarVariosPorCategoriaNivel2(
 						"Tipo de Elemento",
-						productResultado.getIdCategoriaProducto())
+						Integer.parseInt(productResultado.getIdCategoriaProducto()))
 						+ " "
 						+ daoVarios.consultarVariosPorCategoriaNivel2(
 								"Marca Elemento",
-								productResultado.getIdMarcaProducto())
+								Integer.parseInt(productResultado.getIdMarcaProducto()))
 						+ " "
 						+ productResultado.getDescripcionProducto();
 				panelResultProduct.setInfoProduct(mostrar);
@@ -1237,6 +1236,7 @@ public class FrameMain extends JFrame implements ActionListener,
 		this.codLog = codLog;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void itemStateChanged(ItemEvent e) {
 		if (panelResult != null && e.getStateChange() == 1) {
 			if (e != null && ((JComboBox) e.getSource()).getName() != null) {

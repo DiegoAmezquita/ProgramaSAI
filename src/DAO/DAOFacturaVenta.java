@@ -27,9 +27,18 @@ public class DAOFacturaVenta {
 	public ArrayList<FacturaVenta> buscarFacturas(String texto) {
 		ArrayList<FacturaVenta> listaFacturas = new ArrayList<FacturaVenta>();
 		try {
+			
+			String sql = "select * from FacturaVenta where numerofactura like '%"
+							+ texto + "%'" +
+					"union " +
+					"select f.* from facturaventa f," +
+					"(Select * from persona " + DAOPersona.armarBusqueda(texto, "NOMBREPERS APELLIDOPERS NUMDOCPERS")+") p " +
+					"where f.idcliente = p.codpers"; 
+			
 			ResultSet rs = m_DAOConnectionLogin
-					.executeQuery("select * from FacturaVenta where numerofactura = '"
-							+ texto + "'");
+					.executeQuery(sql);
+			
+			
 			while (rs.next()) {
 				FacturaVenta facturaResultado = new FacturaVenta();
 				facturaResultado.setIdFactura(Integer.parseInt(rs

@@ -14,7 +14,7 @@ public class Persona {
     private String fechaNacimiento;
     private String info;
     private String nombre;
-    private int numeroDocumento;
+    private String numeroDocumento;
     private int tipo;
     private int tipoDocumento;
     private int genero;
@@ -91,11 +91,11 @@ public class Persona {
         this.nombre = nombre;
     }
 
-    public int getNumeroDocumento() {
+    public String getNumeroDocumento() {
         return numeroDocumento;
     }
 
-    public void setNumeroDocumento(int numeroDocumento) {
+    public void setNumeroDocumento(String numeroDocumento) {
         this.numeroDocumento = numeroDocumento;
     }
 

@@ -203,6 +203,7 @@ public class PanelCreacionPersona extends JDialog {
 								+ personaTempo.getApellido() + " "
 								+ personaTempo.getNumeroDocumento());
 		frameMain.getPanelFacturacion().getLabelInfoCliente().setVisible(true);
+		frameMain.getPanelFacturacion().cargarClienteInfo();
 		setVisible(false);
 	}
 

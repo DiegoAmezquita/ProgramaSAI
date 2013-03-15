@@ -68,6 +68,7 @@ public class ModeloTablaArticulos extends DefaultTableModel {
 					super.setValueAt(Integer.parseInt(aValue + ""), row, column);
 					panelInventario.cambiarDatoItemInventario(
 							Integer.parseInt(aValue + ""), row, column);
+					panelInventario.calcularTotalFacturaInventario();
 
 				}
 			} catch (Exception e) {
@@ -79,6 +80,7 @@ public class ModeloTablaArticulos extends DefaultTableModel {
 				super.setValueAt(Integer.parseInt(aValue + ""), row, column);
 				panelInventario.cambiarDatoItemInventario(
 						Integer.parseInt(aValue + ""), row, column);
+				panelInventario.calcularTotalFacturaInventario();
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null,
 						"EL PRECIO DEBE SER UN NUMERO");
@@ -88,6 +90,7 @@ public class ModeloTablaArticulos extends DefaultTableModel {
 				super.setValueAt(Integer.parseInt(aValue + ""), row, column);
 				panelInventario.cambiarDatoItemInventario(
 						Integer.parseInt(aValue + ""), row, column);
+				panelInventario.calcularTotalFacturaInventario();
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null,
 						"ERROR CON EL PRECIO SUGERIDO");

@@ -75,7 +75,7 @@ public class ConnectionMysql {
      */
     public ResultSet executeQuery(String sql) {
         try {
-        	System.out.println("SQL "+sql);
+        	//System.out.println("SQL "+sql);
             ResultSet rs = st.executeQuery(sql);
             return rs;
         } catch (SQLException ex) {
@@ -92,7 +92,7 @@ public class ConnectionMysql {
     public int executeUpdate(String sql) {
         int tuplasAfectadas = 0;
         try {
-        	System.out.println("SQL "+sql);
+        	//System.out.println("SQL "+sql);
             PreparedStatement stmt = conexion.prepareStatement(sql);
             tuplasAfectadas = stmt.executeUpdate();
 

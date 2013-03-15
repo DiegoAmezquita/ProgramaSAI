@@ -29,7 +29,7 @@ public class DAOPersona {
             while (rs.next()) {
                 personaResultado.setNombre(rs.getString("NOMBREPERS"));
                 personaResultado.setApellido(rs.getString("APELLIDOPERS"));
-                personaResultado.setNumeroDocumento(Integer.parseInt(rs.getString("NUMDOCPERS")));
+                personaResultado.setNumeroDocumento(rs.getString("NUMDOCPERS"));
                 personaResultado.setCodigo(Integer.parseInt(rs.getString("CODPERS")));
                 personaResultado.setTipo(Integer.parseInt(rs.getString("TIPOPERSO")));
                 personaResultado.setTipoDocumento(Integer.parseInt(rs.getString("TIPODOCPERS")));
@@ -51,7 +51,7 @@ public class DAOPersona {
         return personaResultado;
     }
 
-    public String armarBusqueda(String linea, String atributos) {
+    public static String armarBusqueda(String linea, String atributos) {
 
         StringTokenizer tokens = new StringTokenizer(linea);
         StringTokenizer tokenAtrib;
@@ -84,13 +84,13 @@ public class DAOPersona {
         ArrayList<Persona> listaPersonas = new ArrayList<Persona>();
         int mayor = 0;
         try {
-            System.out.println("CONSULTA "+cadena1);
+           // System.out.println("CONSULTA "+cadena1);
             ResultSet rs = m_DAOConnectionLogin.executeQuery(cadena1);
             while (rs.next()) {
                 Persona personaResultado = new Persona();
                 personaResultado.setNombre(rs.getString("NOMBREPERS"));
                 personaResultado.setApellido(rs.getString("APELLIDOPERS"));
-                personaResultado.setNumeroDocumento(Integer.parseInt(rs.getString("NUMDOCPERS")));
+                personaResultado.setNumeroDocumento(rs.getString("NUMDOCPERS"));
                 personaResultado.setCodigo(Integer.parseInt(rs.getString("CODPERS")));
                 personaResultado.setTipo(Integer.parseInt(rs.getString("TIPOPERSO")));
                 personaResultado.setTipoDocumento(Integer.parseInt(rs.getString("TIPODOCPERS")));
@@ -144,7 +144,7 @@ public class DAOPersona {
             while (rs.next()) {
                 personaResultado.setNombre(rs.getString("NOMBREPERS"));
                 personaResultado.setApellido(rs.getString("APELLIDOPERS"));
-                personaResultado.setNumeroDocumento(Integer.parseInt(rs.getString("NUMDOCPERS")));
+                personaResultado.setNumeroDocumento(rs.getString("NUMDOCPERS"));
                 personaResultado.setCodigo(Integer.parseInt(rs.getString("CODPERS")));
                 personaResultado.setTipo(Integer.parseInt(rs.getString("TIPOPERSO")));
                 personaResultado.setTipoDocumento(Integer.parseInt(rs.getString("TIPODOCPERS")));
@@ -174,7 +174,7 @@ public class DAOPersona {
                 Persona per = new Persona();
                 per.setNombre(rs.getString("NOMBREPERS"));
                 per.setApellido(rs.getString("APELLIDOPERS"));
-                per.setNumeroDocumento(Integer.parseInt(rs.getString("NUMDOCPERS")));
+                per.setNumeroDocumento(rs.getString("NUMDOCPERS"));
                 per.setCodigo(Integer.parseInt(rs.getString("CODPERS")));
                 per.setTipo(Integer.parseInt(rs.getString("TIPOPERSO")));
                 per.setTipoDocumento(Integer.parseInt(rs.getString("TIPODOCPERS")));

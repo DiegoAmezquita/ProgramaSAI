@@ -2,7 +2,6 @@ package interfazInventario;
 
 import Codigo.Datos;
 import Codigo.Producto;
-import Codigo.Varios;
 import DAO.DAOProducto;
 import DAO.DAOvarios;
 import Interfaz.DatosCellRenderer;
@@ -10,39 +9,29 @@ import Interfaz.FrameMain;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.DefaultListModel;
 import javax.swing.InputMap;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
+@SuppressWarnings("serial")
 public class PanelCreacionProducto extends JDialog {
 
 	static String formato_moneda = "$###,###,###,###,###,###,###";
@@ -121,7 +110,9 @@ public class PanelCreacionProducto extends JDialog {
 					} else {
 						cargarEnFactura();
 					}
-					 setVisible(false);
+					campoBusquedaProducto.setText("");
+					modelListResultProducto.clear();
+					setVisible(false);
 
 				}
 			}
@@ -157,10 +148,11 @@ public class PanelCreacionProducto extends JDialog {
 		int posicion = listResultProducto.getSelectedIndex();
 		idProductoCargado = ((Datos) modelListResultProducto.get(posicion))
 				.getCodigo();
-		Producto productoTempo = daoProducto.buscarPorCodigo(idProductoCargado);
+		Producto productoTempo = daoProducto
+				.buscarPorCodigoVarios(((Datos) modelListResultProducto
+						.get(posicion)).getCodigo());
 		setVisible(false);
-		frameMain.getPanelFacturacion().agregarProductoFactura(
-				((Datos) modelListResultProducto.get(posicion)).getCodigo());
+		frameMain.getPanelFacturacion().agregarProductoFactura(productoTempo);
 	}
 
 	public AbstractAction buscarProducto() {
@@ -175,58 +167,57 @@ public class PanelCreacionProducto extends JDialog {
 
 	public void cargarResultadosProducto() {
 		// TODO mejorar esta busqueda porque se esta demorando mucho
-		ArrayList<Producto> listaProductos = daoProducto
-				.consultarOptimizado(campoBusquedaProducto.getText());
-		modelListResultProducto.clear();
-		String mostrar = "";
-		for (int i = 0; i < listaProductos.size(); i++) {
-			mostrar = daoVarios.consultarVariosPorCategoriaNivel2(
-					"Tipo de Elemento", listaProductos.get(i)
-							.getIdCategoriaProducto())
-					+ " "
-					+ daoVarios.consultarVariosPorCategoriaNivel2(
-							"Marca Elemento", listaProductos.get(i)
-									.getIdMarcaProducto())
-					+ " "
-					+ listaProductos.get(i).getReferenciaProducto()
-					+ " "
-					+ listaProductos.get(i).getNumeroParteProducto()
-					+ " "
-					+ listaProductos.get(i).getAbreviadoProducto();
-			StringTokenizer tk = new StringTokenizer(
-					campoBusquedaProducto.getText(), " "); // Cambia aquÃ­ el
-			// separador
-			mostrar = "<html>" + mostrar.toUpperCase() + "</html>";
-			String nuevo = "";
-			String palabra = "";
-			while (tk.hasMoreTokens()) {
-				palabra = tk.nextToken().toUpperCase();
-				// nuevo = "<font color=blue>" + palabra + "</font>";
-				nuevo = "<b>" + palabra + "</b>";
-				mostrar = mostrar.replaceAll(palabra, nuevo);
+		if (!campoBusquedaProducto.getText().equals("")) {
+			ArrayList<Producto> listaProductos = daoProducto
+					.consultarBusquedaProducto(campoBusquedaProducto.getText());
+			modelListResultProducto.clear();
+			String mostrar = "";
+			for (int i = 0; i < listaProductos.size(); i++) {
+				mostrar = listaProductos.get(i).getIdCategoriaProducto() + " "
+						+ listaProductos.get(i).getIdMarcaProducto() + " "
+						+ listaProductos.get(i).getReferenciaProducto() + " "
+						+ listaProductos.get(i).getNumeroParteProducto() + " "
+						+ listaProductos.get(i).getAbreviadoProducto();
+				StringTokenizer tk = new StringTokenizer(
+						campoBusquedaProducto.getText(), " "); // Cambia aquÃ­
+																// el
+				// separador
+				mostrar = "<html>" + mostrar.toUpperCase() + "</html>";
+				String nuevo = "";
+				String palabra = "";
+				while (tk.hasMoreTokens()) {
+					palabra = tk.nextToken().toUpperCase();
+					nuevo = "<b>" + palabra + "</b>";
+					mostrar = mostrar.replaceAll(palabra, nuevo);
+				}
+				modelListResultProducto.addElement(new Datos(listaProductos
+						.get(i).getIdProducto(), mostrar));
+				mostrar = "";
 			}
-			modelListResultProducto.addElement(new Datos(listaProductos.get(i)
-					.getIdProducto(), mostrar));
-			mostrar = "";
-		}
-		System.out.println("TAMAÑO DE LA LISTA "+listaProductos.size());
-		if (listaProductos.size() == 1) {
-			System.out
-					.println("ESTE ES EL CODIGO QUE SE PSUPONE QUE ESTOY CARGANDO "
-							+ ((Datos) modelListResultProducto.get(0))
-									.getCodigo());
-			Producto prodTempo = daoProducto
-					.buscarPorCodigo(((Datos) modelListResultProducto.get(0))
-							.getCodigo());
-			if (prodTempo.getTieneSerial() == 0) {
-				if (padre.equals("INVENTARIO")) {
-					frameMain.getPanelInventario().agregarArticuloFactura(
-							prodTempo, "0", 1);
-					this.setVisible(false);
+			System.out.println("TAMAÑO DE LA LISTA " + listaProductos.size());
+			if (listaProductos.size() == 1) {
+				System.out
+						.println("ESTE ES EL CODIGO QUE SE PSUPONE QUE ESTOY CARGANDO "
+								+ ((Datos) modelListResultProducto.get(0))
+										.getCodigo());
+				Producto prodTempo = daoProducto
+						.buscarPorCodigoVarios(((Datos) modelListResultProducto
+								.get(0)).getCodigo());
+				if (prodTempo.getTieneSerial() == 0) {
+					if (padre.equals("INVENTARIO")) {
+						frameMain.getPanelInventario().agregarArticuloFactura(
+								prodTempo, "0", 1);
+						this.setVisible(false);
+					} else {
+						frameMain.getPanelFacturacion().agregarProductoFactura(
+								prodTempo);
+						this.setVisible(false);
+					}
 				} else {
-					frameMain.getPanelFacturacion().agregarProductoFactura(
-							prodTempo.getIdProducto());
-					this.setVisible(false);
+					if (!padre.equals("INVENTARIO")) {
+						listResultProducto.setSelectedIndex(0);
+						cargarEnFactura();
+					}
 				}
 			}
 		}
@@ -238,6 +229,7 @@ public class PanelCreacionProducto extends JDialog {
 			instancia = new PanelCreacionProducto(frameMain, padre1);
 		}
 		padre = padre1;
+		instancia.campoBusquedaProducto.grabFocus();
 		return instancia;
 	}
 

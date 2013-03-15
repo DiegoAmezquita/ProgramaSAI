@@ -7,8 +7,8 @@ package Codigo;
 public class Producto {
 
 	 private int idProducto;
-	 private int idCategoriaProducto;
-	 private int idMarcaProducto;
+	 private String idCategoriaProducto;
+	 private String idMarcaProducto;
 	 private String referenciaProducto;
 	 private String descripcionProducto;
 	 private String numeroParteProducto;
@@ -22,7 +22,7 @@ public class Producto {
 	 private int costoProducto;
 	 private String abreviadoProducto;
 	 private float margenMinimo;
-	 private int idTipoProducto;
+	 private String idTipoProducto;
 	 private float ivaProducto;
 	 private int garantiaMeses;
 	 
@@ -34,7 +34,6 @@ public class Producto {
         margenProducto = 0;
         existenciasProducto = 0;
         margenMinimo = 0;
-        idTipoProducto = 0;
         tieneSerial=0;
         precioProducto=-1;
         costoProducto=-1;
@@ -63,21 +62,6 @@ public class Producto {
 		this.idProducto = idProducto;
 	}
 
-	public int getIdCategoriaProducto() {
-		return idCategoriaProducto;
-	}
-
-	public void setIdCategoriaProducto(int idCategoriaProducto) {
-		this.idCategoriaProducto = idCategoriaProducto;
-	}
-
-	public int getIdMarcaProducto() {
-		return idMarcaProducto;
-	}
-
-	public void setIdMarcaProducto(int idMarcaProducto) {
-		this.idMarcaProducto = idMarcaProducto;
-	}
 
 	public String getReferenciaProducto() {
 		return referenciaProducto;
@@ -183,13 +167,6 @@ public class Producto {
 		this.margenMinimo = margenMinimo;
 	}
 
-	public int getIdTipoProducto() {
-		return idTipoProducto;
-	}
-
-	public void setIdTipoProducto(int idTipoProducto) {
-		this.idTipoProducto = idTipoProducto;
-	}
 
 	public float getIvaProducto() {
 		return ivaProducto;
@@ -202,6 +179,42 @@ public class Producto {
 	public int getTieneSerial() {
 		return tieneSerial;
 	}
+
+	public String getIdCategoriaProducto() {
+		return idCategoriaProducto;
+	}
+
+
+
+	public void setIdCategoriaProducto(String idCategoriaProducto) {
+		this.idCategoriaProducto = idCategoriaProducto;
+	}
+
+
+
+	public String getIdMarcaProducto() {
+		return idMarcaProducto;
+	}
+
+
+
+	public void setIdMarcaProducto(String idMarcaProducto) {
+		this.idMarcaProducto = idMarcaProducto;
+	}
+
+
+
+	public String getIdTipoProducto() {
+		return idTipoProducto;
+	}
+
+
+
+	public void setIdTipoProducto(String idTipoProducto) {
+		this.idTipoProducto = idTipoProducto;
+	}
+
+
 
 	public void setTieneSerial(int tieneSerial) {
 		this.tieneSerial = tieneSerial;

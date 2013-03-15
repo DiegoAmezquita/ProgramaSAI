@@ -34,9 +34,9 @@ public class DAOProducto {
 			while (rs.next()) {
 				productResultado.setIdProducto(Integer.parseInt(rs
 						.getString("idProducto")));
-				productResultado.setIdCategoriaProducto(Integer.parseInt(rs
+				productResultado.setIdCategoriaProducto((rs
 						.getString("idCategoriaProducto")));
-				productResultado.setIdMarcaProducto(Integer.parseInt(rs
+				productResultado.setIdMarcaProducto((rs
 						.getString("idMarcaProducto")));
 				productResultado.setReferenciaProducto(rs
 						.getString("referenciaProducto"));
@@ -63,7 +63,7 @@ public class DAOProducto {
 						.getString("abreviadoProducto"));
 				productResultado.setMargenMinimo(Float.parseFloat(rs
 						.getString("margenMinimo")));
-				productResultado.setIdTipoProducto(Integer.parseInt(rs
+				productResultado.setIdTipoProducto((rs
 						.getString("idTipoProducto")));
 				productResultado.setTieneSerial(Integer.parseInt(rs
 						.getString("tieneSerial")));
@@ -142,11 +142,11 @@ public class DAOProducto {
 				Producto productResultado = new Producto();
 				productResultado.setIdProducto(Integer.parseInt(rs
 						.getString("idProducto")));
-				productResultado.setIdCategoriaProducto(Integer
-						.parseInt(daoVarios.consultarVariosPorCategoriaNivel2(
-								"Tipo de Elemento", Integer.parseInt(rs
+				productResultado.setIdCategoriaProducto((daoVarios
+						.consultarVariosPorCategoriaNivel2("Tipo de Elemento",
+								Integer.parseInt(rs
 										.getString("idCategoriaProducto")))));
-				productResultado.setIdMarcaProducto(Integer.parseInt(daoVarios
+				productResultado.setIdMarcaProducto((daoVarios
 						.consultarVariosPorCategoriaNivel2("Marca Elemento",
 								Integer.parseInt(rs
 										.getString("idMarcaProducto")))));
@@ -175,7 +175,7 @@ public class DAOProducto {
 						.getString("abreviadoProducto"));
 				productResultado.setMargenMinimo(Float.parseFloat(rs
 						.getString("margenMinimo")));
-				productResultado.setIdTipoProducto(Integer.parseInt(rs
+				productResultado.setIdTipoProducto((rs
 						.getString("idTipoProducto")));
 				productResultado.setTieneSerial(Integer.parseInt(rs
 						.getString("tieneSerial")));
@@ -192,20 +192,6 @@ public class DAOProducto {
 	}
 
 	public ArrayList<Producto> consultarOptimizado(String cad) {
-
-		// TODO modificar la consulta para que no sea con el codigo sino con el
-		// nombre del padre
-
-		// String cadena = "select producto.* from producto, varios a where " +
-		// "(producto.idmarcaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 127 and a.nombrevar like'%"+cad+"%') or "
-		// +
-		// "(producto.idcategoriaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 124 and a.nombrevar like'%"+cad+"%') or "
-		// +
-		// "(producto.EANCodeProducto like '%"+cad+"%') or "+
-		// "(producto.CPUCodeProducto like '%"+cad+"%') or "+
-		// "(producto.pluProducto like '%"+cad+"%') or "+
-		// "(producto.descripcionProducto like '%"+cad+"%') or "+
-		// "(producto.abreviadoProducto like '%"+cad+"%')";
 
 		String cadena = "(select producto.* from producto, varios a where "
 				+ "(producto.idcategoriaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 124 and a.nombrevar like'%"
@@ -238,28 +224,6 @@ public class DAOProducto {
 
 		System.out.println("CONSULTA PRODUCTO " + cadena);
 
-		// "
-		// String cadena = "select producto.idproducto" +
-		// ",producto.idCategoriaProducto" +
-		// ",producto.idMarcaProducto" +
-		// ",producto.referenciaProducto" +
-		// ",producto.descripcionProducto" +
-		// ",producto.EANCodeProducto" +
-		// ",producto.numeroParteProducto" +
-		// ",producto.CPUCodeProducto" +
-		// ",producto.pluProducto" +
-		// ",producto.margenProducto" +
-		// ",producto.fechaActualizacionProducto" +
-		// ",producto.existenciasProducto" +
-		// ",producto.precioProducto" +
-		// ",producto.existenciasProducto" +
-		// ",producto.costoProducto" +
-		// ",producto.abreviadoProducto" +
-		// ",producto.margenMinimo" +
-		// ",producto.idTipoProducto from producto, varios a,varios b where (producto.idmarcaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 127 and a.nombrevar like'%"+cad+"%') or "
-		// +
-		// "(producto.idcategoriaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 124 and a.nombrevar like'%"+cad+"%')";
-
 		ArrayList<Producto> listProduct = new ArrayList<Producto>();
 		try {
 			ResultSet rs = m_DAOConnectionLogin.executeQuery(cadena);
@@ -267,10 +231,10 @@ public class DAOProducto {
 				Producto productResultado = new Producto();
 				productResultado.setIdProducto(Integer.parseInt(rs
 						.getString("idProducto")));
-				productResultado.setIdCategoriaProducto(Integer.parseInt(rs
-						.getString("idCategoriaProducto")));
-				productResultado.setIdMarcaProducto(Integer.parseInt(rs
-						.getString("idMarcaProducto")));
+				productResultado.setIdCategoriaProducto(rs
+						.getString("idCategoriaProducto"));
+				productResultado.setIdMarcaProducto(rs
+						.getString("idMarcaProducto"));
 				productResultado.setReferenciaProducto(rs
 						.getString("referenciaProducto"));
 				productResultado.setDescripcionProducto(rs
@@ -296,8 +260,113 @@ public class DAOProducto {
 						.getString("abreviadoProducto"));
 				productResultado.setMargenMinimo(Float.parseFloat(rs
 						.getString("margenMinimo")));
-				productResultado.setIdTipoProducto(Integer.parseInt(rs
-						.getString("idTipoProducto")));
+				productResultado.setIdTipoProducto(rs
+						.getString("idTipoProducto"));
+				productResultado.setTieneSerial(Integer.parseInt(rs
+						.getString("tieneSerial")));
+				productResultado.setIvaProducto(Float.parseFloat(rs
+						.getString("iva")));
+				productResultado.setGarantiaMeses(Integer.parseInt(rs
+						.getString("garantiaMeses")));
+				listProduct.add(productResultado);
+			}
+		} catch (SQLException ex) {
+		}
+		return listProduct;
+	}
+
+	public ArrayList<Producto> consultarBusquedaProducto(String cad) {
+
+		// String cadena = "(select producto.* from producto, varios a where "
+		// +
+		// "(producto.idcategoriaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 124 and a.nombrevar like'%"
+		// + cad
+		// + "%') or "
+		// +
+		// "(producto.idmarcaproducto = a.TIPONIVEL2VAR and a.TIPONIVEL3VAR = 127 and a.nombrevar like'%"
+		// + cad
+		// + "%')) "
+		// + "union"
+		// + "(select producto.* from producto where "
+		// + "(producto.EANCodeProducto like '%"
+		// + cad
+		// + "%') or "
+		// + "(producto.CPUCodeProducto like '%"
+		// + cad
+		// + "%') or "
+		// + "(producto.pluProducto like '%"
+		// + cad
+		// + "%') or "
+		// + "(producto.referenciaProducto like '%"
+		// + cad
+		// + "%') or "
+		// + "(producto.numeroParteProducto like '%"
+		// + cad
+		// + "%') or "
+		// + "(producto.descripcionProducto like '%"
+		// + cad
+		// + "%') or "
+		// + "(producto.abreviadoProducto like '%" + cad + "%'))";
+
+		String cadena = "SELECT produ.*, a.nombrevar AS categoria, b.nombrevar AS marca FROM (SELECT producto.* FROM producto WHERE producto.EANCodeProducto LIKE '%"
+				+ cad
+				+ "%' OR producto.CPUCodeProducto LIKE '%"
+				+ cad
+				+ "%' OR producto.pluProducto LIKE '%"
+				+ cad
+				+ "%' OR producto.referenciaProducto LIKE '%"
+				+ cad
+				+ "%' OR producto.numeroParteProducto LIKE '%"
+				+ cad
+				+ "%' OR producto.descripcionProducto LIKE '%"
+				+ cad
+				+ "%' OR producto.abreviadoProducto LIKE '%"
+				+ cad
+				+ "%' union select producto.* from producto, varios where varios.nombrevar like '%"
+				+ cad
+				+ "%' AND varios.TIPONIVEL3VAR =127 and varios.tiponivel2var = idmarcaproducto or varios.nombrevar like '%"
+				+ cad
+				+ "%' AND varios.TIPONIVEL3VAR =124 and varios.tiponivel2var = idcategoriaproducto ) produ, varios a, varios b WHERE a.tiponivel3var =124 AND produ.idcategoriaproducto = a.tiponivel2var AND b.tiponivel3var =127 AND produ.idmarcaproducto = b.tiponivel2var ";
+
+		System.out.println("CONSULTA PRODUCTO " + cadena);
+
+		ArrayList<Producto> listProduct = new ArrayList<Producto>();
+		try {
+			ResultSet rs = m_DAOConnectionLogin.executeQuery(cadena);
+			while (rs.next()) {
+				Producto productResultado = new Producto();
+				productResultado.setIdProducto(Integer.parseInt(rs
+						.getString("idProducto")));
+				productResultado.setIdCategoriaProducto(rs
+						.getString("categoria"));
+				productResultado.setIdMarcaProducto(rs.getString("marca"));
+				productResultado.setReferenciaProducto(rs
+						.getString("referenciaProducto"));
+				productResultado.setDescripcionProducto(rs
+						.getString("descripcionProducto"));
+				productResultado.setEANCodeProducto(rs
+						.getString("EANCodeProducto"));
+				productResultado.setNumeroParteProducto(rs
+						.getString("numeroParteProducto"));
+				productResultado.setUPCCodeProducto(rs
+						.getString("CPUCodeProducto"));
+				productResultado.setPluProducto(rs.getString("pluProducto"));
+				productResultado.setMargenProducto(Float.parseFloat(rs
+						.getString("margenProducto")));
+				productResultado.setFechaActualizacionProducto(rs
+						.getString("fechaActualizacionProducto"));
+				productResultado.setExistenciasProducto(Integer.parseInt(rs
+						.getString("existenciasProducto")));
+				productResultado.setPrecioProducto(Integer.parseInt(rs
+						.getString("precioProducto")));
+				productResultado.setCostoProducto(Integer.parseInt(rs
+						.getString("costoProducto")));
+				productResultado.setAbreviadoProducto(rs
+						.getString("abreviadoProducto"));
+				productResultado.setMargenMinimo(Float.parseFloat(rs
+						.getString("margenMinimo")));
+				productResultado.setIdTipoProducto(rs
+						.getString("idTipoProducto"));
 				productResultado.setTieneSerial(Integer.parseInt(rs
 						.getString("tieneSerial")));
 				productResultado.setIvaProducto(Float.parseFloat(rs
@@ -325,6 +394,65 @@ public class DAOProducto {
 		return conta;
 	}
 
+	public Producto buscarPorCodigoVarios(int idProduct) {
+		Producto productResultado = new Producto();
+		try {
+			ResultSet rs = m_DAOConnectionLogin
+					.executeQuery("select producto.*, a.nombrevar as marca, b.nombrevar as categoria, c.nombrevar as tipo from producto,varios a, varios b, varios c	where idproducto = "
+							+ idProduct
+							+ " and a.TIPONIVEL3VAR =127 and a.tiponivel2var = idmarcaproducto " +
+							"and b.TIPONIVEL3VAR =124 and b.tiponivel2var = idcategoriaproducto " +
+							"and c.TIPONIVEL3VAR =414 and c.tiponivel2var = idtipoproducto");
+			while (rs.next()) {
+				productResultado.setIdProducto(Integer.parseInt(rs
+						.getString("idProducto")));
+				productResultado.setIdCategoriaProducto(rs
+						.getString("categoria"));
+				productResultado.setIdMarcaProducto((rs
+						.getString("marca")));
+				productResultado.setReferenciaProducto(rs
+						.getString("referenciaProducto"));
+				productResultado.setDescripcionProducto(rs
+						.getString("descripcionProducto"));
+				productResultado.setEANCodeProducto(rs
+						.getString("EANCodeProducto"));
+				productResultado.setNumeroParteProducto(rs
+						.getString("numeroParteProducto"));
+				productResultado.setUPCCodeProducto(rs
+						.getString("CPUCodeProducto"));
+				productResultado.setPluProducto(rs.getString("pluProducto"));
+				productResultado.setMargenProducto(Float.parseFloat(rs
+						.getString("margenProducto")));
+				productResultado.setFechaActualizacionProducto(rs
+						.getString("fechaActualizacionProducto"));
+				productResultado.setExistenciasProducto(Integer.parseInt(rs
+						.getString("existenciasProducto")));
+				productResultado.setPrecioProducto(Integer.parseInt(rs
+						.getString("precioProducto")));
+				productResultado.setCostoProducto(Integer.parseInt(rs
+						.getString("costoProducto")));
+				productResultado.setAbreviadoProducto(rs
+						.getString("abreviadoProducto"));
+				productResultado.setMargenMinimo(Float.parseFloat(rs
+						.getString("margenMinimo")));
+				productResultado.setIdTipoProducto((rs
+						.getString("tipo")));
+				productResultado.setTieneSerial(Integer.parseInt(rs
+						.getString("tieneSerial")));
+				productResultado.setIvaProducto(Float.parseFloat(rs
+						.getString("iva")));
+				productResultado.setGarantiaMeses(Integer.parseInt(rs
+						.getString("garantiaMeses")));
+
+			}
+
+		} catch (SQLException ex) {
+			Logger.getLogger(DAOProducto.class.getName()).log(Level.SEVERE,
+					null, ex);
+		}
+		return productResultado;
+	}
+
 	public Producto buscarPorCodigo(int idProduct) {
 		Producto productResultado = new Producto();
 		try {
@@ -334,9 +462,9 @@ public class DAOProducto {
 			while (rs.next()) {
 				productResultado.setIdProducto(Integer.parseInt(rs
 						.getString("idProducto")));
-				productResultado.setIdCategoriaProducto(Integer.parseInt(rs
-						.getString("idCategoriaProducto")));
-				productResultado.setIdMarcaProducto(Integer.parseInt(rs
+				productResultado.setIdCategoriaProducto(rs
+						.getString("idCategoriaProducto"));
+				productResultado.setIdMarcaProducto((rs
 						.getString("idMarcaProducto")));
 				productResultado.setReferenciaProducto(rs
 						.getString("referenciaProducto"));
@@ -363,7 +491,7 @@ public class DAOProducto {
 						.getString("abreviadoProducto"));
 				productResultado.setMargenMinimo(Float.parseFloat(rs
 						.getString("margenMinimo")));
-				productResultado.setIdTipoProducto(Integer.parseInt(rs
+				productResultado.setIdTipoProducto((rs
 						.getString("idTipoProducto")));
 				productResultado.setTieneSerial(Integer.parseInt(rs
 						.getString("tieneSerial")));
@@ -519,9 +647,9 @@ public class DAOProducto {
 		int nuevasExistencias = buscarPorCodigo(idProducto)
 				.getExistenciasProducto();
 		nuevasExistencias = nuevasExistencias + existencias;
-		System.out.println("''''''''''''''''''''''''''''''''ID PRODUCTO " + idProducto
-				+ " existencias a agregar " + existencias + " total "
-				+ nuevasExistencias);
+		System.out.println("''''''''''''''''''''''''''''''''ID PRODUCTO "
+				+ idProducto + " existencias a agregar " + existencias
+				+ " total " + nuevasExistencias);
 
 		int tuplasAfectadas = 0;
 		String sql = "Update producto Set existenciasProducto='"

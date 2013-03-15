@@ -1,6 +1,7 @@
 package Interfaz;
 
 import Codigo.Configuracion;
+import Codigo.Utils;
 import DAO.DAOConnectionLogin;
 
 import java.awt.Font;
@@ -17,6 +18,10 @@ import javax.swing.WindowConstants;
 
 public class FrameLogin extends JFrame implements ActionListener {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JLabel labelInicioSesion;
 	private JLabel labelUserName;
 	private JLabel labelPassword;
@@ -29,6 +34,8 @@ public class FrameLogin extends JFrame implements ActionListener {
 	private String userDb;
 	private String passwordDb;
 	private Configuracion config;
+
+	
 
 	public FrameLogin() {
 
@@ -66,35 +73,40 @@ public class FrameLogin extends JFrame implements ActionListener {
 		add(buttonConnect);
 
 		config = new Configuracion();
+		cargarConfiguracion();
 
 	}
 
 	public void cargarConfiguracion() {
 
-		config.cargarConfigXML();
+		config.cargarConfig();
 		if (config.isConfiguracionCargada()) {
-			host = config.buscarValorXML("host");
-			db = config.buscarValorXML("nombre");
-			userDb = config.buscarValorXML("usuario");
-			passwordDb = config.buscarValorXML("clave");
+			host = config.getDatabase();
+			db = config.getDbname();
+			userDb = config.getDbuser();
+			passwordDb = config.getDbpassword();
 		}
 
 	}
 
 	public static void main(String[] args) {
+
+		
 		FrameLogin frame = new FrameLogin();
+
+		Utils.setup();
 
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setVisible(true);
+
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		String command = arg0.getActionCommand();
 		if (command.equals("CONECTAR")) {
-			cargarConfiguracion();
-			System.out.println(fieldUserName.getText());
-			System.out.println(fieldPassword.getText());
+			
 
 			if (config.isConfiguracionCargada()) {
 				System.out.println("VOY ACA");

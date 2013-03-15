@@ -12,63 +12,43 @@ import DAO.DAOArticulo;
 import DAO.DAODetalle;
 import DAO.DAOFacturaVenta;
 import DAO.DAOItemFactura;
-import DAO.DAOOpcion;
 import DAO.DAOPersona;
 import DAO.DAOProducto;
 import DAO.DAOvarios;
-import Interfaz.DatosCellRenderer;
-import Interfaz.FrameImpresion;
 import Interfaz.FrameMain;
 
-import interfazInventario.ModeloTablaArticulos;
 import interfazInventario.PanelCreacionProducto;
-import interfazInventario.PanelInventario;
 import interfazInventario.PanelNumeroSerie;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
-import java.lang.reflect.Array;
-import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -77,14 +57,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.TableColumn;
 
+import com.mysql.jdbc.StringUtils;
+
+@SuppressWarnings("serial")
 public class PanelFacturacion extends JPanel implements MouseListener {
 
 	private TitledBorder rotulo;
@@ -156,6 +137,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	private PanelNumeroSerie panelNumeroSerie;
 	private JInternalFrame ventanaInterna;
 
+	ArrayList<ItemFacturaTabla> listaItemsFactura;
+
 	private JPopupMenu emergente;// es el "marco" donde se pone el menu
 	private JMenuItem menus[];// lleva la lista de las opciones
 
@@ -165,26 +148,70 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	// JList listResultProductoSerial;
 	// JScrollPane scrollPaneResultProductoSerial;
 
+	DecimalFormatSymbols simbolos = DecimalFormatSymbols.getInstance();
+	
+	
+	
+	char sep;
+	char mill;
+
+	
+	
+	DecimalFormat df;
+
+	String direccionSeleccionada = "", telefonoSeleccionado = "";
+
 	public PanelFacturacion(FrameMain frameMain, JInternalFrame ventanaInterna) {
 
 		this.frameMain = frameMain;
 		this.ventanaInterna = ventanaInterna;
+		
+		
+		//simbolos.setDecimalSeparator(',');
+		//simbolos.setGroupingSeparator('.');
+		
+		
+		mill = simbolos.getDecimalSeparator();
+		 sep = simbolos.getGroupingSeparator();
+		
+		System.out.println("MILL: "+mill);
+		System.out.println("SEP: "+sep);
+
+		
+		
+		df = new DecimalFormat("#" + sep + "###" + sep + "###" + sep + "###" + mill + "##",simbolos);
 
 		setLayout(null);
 
 		productosFactura = new ArrayList<Producto>();
 
 		labelCliente = new JLabel("Cliente");
-		labelCliente.setBounds(10, 20, 80, 30);
+		labelCliente.setBounds(10, 10, 80, 30);
 		add(labelCliente);
 
 		labelClienteSeleccionado = new JLabel("NO HA SELECCIONADO UN CLIENTE");
-		labelClienteSeleccionado.setBounds(90, 20, 720, 30);
+		labelClienteSeleccionado.setFont(new Font("Arial", 1, 17));
+		labelClienteSeleccionado.setBounds(90, 10, 720, 30);
 		add(labelClienteSeleccionado);
 
-		labelInfoCliente = new JLabel(
-				"<html><font color='red'>info</font> </html>");
-		labelInfoCliente.setBounds(350, 20, 50, 30);
+		JLabel labelDireccion = new JLabel("Dirección:");
+		labelDireccion.setBounds(10, 40, 70, 25);
+		add(labelDireccion);
+
+		comboClienteInfoDireccion = new JComboBox();
+		comboClienteInfoDireccion.setBounds(90, 40, 250, 25);
+		add(comboClienteInfoDireccion);
+
+		JLabel labelTelefono = new JLabel("Telefono:");
+		labelTelefono.setBounds(350, 40, 70, 30);
+		add(labelTelefono);
+
+		comboClienteInfoTelefono = new JComboBox();
+		comboClienteInfoTelefono.setBounds(410, 40, 160, 25);
+		add(comboClienteInfoTelefono);
+
+		labelInfoCliente = new JLabel("<html><font color='red'>info</font> </html>");
+		labelInfoCliente.setBounds(350, 10, 50, 30);
 		labelInfoCliente.addMouseListener(new MouseListener() {
 
 			@Override
@@ -218,20 +245,20 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 			}
 		});
 		labelInfoCliente.setVisible(false);
-		add(labelInfoCliente);
+		// add(labelInfoCliente);
 
 		buttonSearchCliente = new JButton("BUSCAR CLIENTE");
-		buttonSearchCliente.setBounds(470, 20, 160, 30);
+		buttonSearchCliente.setBounds(585, 10, 150, 40);
 		buttonSearchCliente.setActionCommand("BUSCARCLIENTEFACTURACION");
 		buttonSearchCliente.addActionListener(frameMain);
 		add(buttonSearchCliente);
 
 		labelFechaFactura = new JLabel("Fecha");
-		labelFechaFactura.setBounds(10, 60, 80, 30);
+		labelFechaFactura.setBounds(10, 70, 80, 30);
 		add(labelFechaFactura);
 
 		campoFechaFactura = new JTextField();
-		campoFechaFactura.setBounds(90, 60, 150, 30);
+		campoFechaFactura.setBounds(90, 70, 160, 30);
 		// campoFechaFactura.setEditable(false);
 		campoFechaFactura.addFocusListener(new FocusListener() {
 
@@ -245,15 +272,12 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 			@Override
 			public void focusLost(FocusEvent arg0) {
 				if (!campoFechaFactura.getText().equals("")) {
-					SimpleDateFormat formateador = new SimpleDateFormat(
-							"yyyy/MM/dd kk:mm:ss");
+					SimpleDateFormat formateador = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
 					formateador.setLenient(false);
 					try {
-						Date fecha = formateador.parse(campoFechaFactura
-								.getText());
+						Date fecha = formateador.parse(campoFechaFactura.getText());
 					} catch (ParseException e) {
-						JOptionPane.showMessageDialog(null,
-								"La fecha tiene un formato incorrecto");
+						JOptionPane.showMessageDialog(null, "La fecha tiene un formato incorrecto");
 						campoFechaFactura.requestFocus();
 					}
 				}
@@ -265,11 +289,11 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		add(campoFechaFactura);
 
 		labelVenceFactura = new JLabel("Vence");
-		labelVenceFactura.setBounds(250, 60, 80, 30);
+		labelVenceFactura.setBounds(350, 70, 80, 30);
 		add(labelVenceFactura);
 
 		campoVenceFactura = new JTextField();
-		campoVenceFactura.setBounds(300, 60, 160, 30);
+		campoVenceFactura.setBounds(410, 70, 160, 30);
 		campoVenceFactura.addFocusListener(new FocusListener() {
 
 			@Override
@@ -282,15 +306,12 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 			@Override
 			public void focusLost(FocusEvent arg0) {
 				if (!campoVenceFactura.getText().equals("")) {
-					SimpleDateFormat formateador = new SimpleDateFormat(
-							"yyyy/MM/dd kk:mm:ss");
+					SimpleDateFormat formateador = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
 					formateador.setLenient(false);
 					try {
-						Date fecha = formateador.parse(campoVenceFactura
-								.getText());
+						Date fecha = formateador.parse(campoVenceFactura.getText());
 					} catch (ParseException e) {
-						JOptionPane.showMessageDialog(null,
-								"La fecha tiene un formato incorrecto");
+						JOptionPane.showMessageDialog(null, "La fecha tiene un formato incorrecto");
 						campoVenceFactura.requestFocus();
 					}
 				}
@@ -301,7 +322,7 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		add(campoVenceFactura);
 
 		buttonSearchProducto = new JButton("BUSCAR PRODUCTO");
-		buttonSearchProducto.setBounds(470, 60, 160, 30);
+		buttonSearchProducto.setBounds(585, 60, 150, 40);
 		buttonSearchProducto.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -312,17 +333,16 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		});
 		add(buttonSearchProducto);
 
-		MouseListener mouseListener = new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					int posicion = listResultProducto.locationToIndex(e
-							.getPoint());
-					System.out.println("La posicion es " + posicion);
-					agregarProductoFactura(((Datos) modelListResultProducto
-							.get(posicion)).getCodigo());
-				}
-			}
-		};
+		// MouseListener mouseListener = new MouseAdapter() {
+		// public void mouseClicked(MouseEvent e) {
+		// if (e.getClickCount() == 2) {
+		// int posicion = listResultProducto.locationToIndex(e
+		// .getPoint());
+		// agregarProductoFactura(((Datos) modelListResultProducto
+		// .get(posicion)).getCodigo());
+		// }
+		// }
+		// };
 
 		daoPersona = new DAOPersona();
 		daoVarios = new DAOvarios();
@@ -341,10 +361,35 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		cargarFecha(campoVenceFactura);
 		cargarNumeroFactura();
 
+		listaItemsFactura = new ArrayList<ItemFacturaTabla>();
+
+	}
+
+	public void cargarClienteInfo() {
+		comboClienteInfoDireccion.removeAllItems();
+		comboClienteInfoTelefono.removeAllItems();
+
+		ArrayList<Detalle> listaDetalles = getListaDetalles();
+
+		for (int i = 0; i < listaDetalles.size(); i++) {
+			Detalle detalleTempo = listaDetalles.get(i);
+			System.out.println("DETALLE  " + detalleTempo.getTipo() + " desc " + detalleTempo.getDescripcion());
+			if (detalleTempo.getTipo().equals("Direccion")) {
+				comboClienteInfoDireccion.addItem(detalleTempo.getDescripcion() + " Ciudad: " + detalleTempo.getNombreUbicacion());
+			} else if (detalleTempo.getTipo().equals("Telefono") || detalleTempo.getTipo().equals("Celular")) {
+				comboClienteInfoTelefono.addItem(detalleTempo.getDescripcion());
+			}
+		}
+
+	}
+
+	public ArrayList<Detalle> getListaDetalles() {
+		ArrayList<Detalle> listaDetalles = daoDetalle.consultarDetalleCompleto(idClienteCargado);
+		return listaDetalles;
 	}
 
 	public void crearDialogoInformacionCliente() {
-		if(dialogoInformacionCliente!=null){
+		if (dialogoInformacionCliente != null) {
 			dialogoInformacionCliente.setVisible(false);
 			dialogoInformacionCliente = null;
 		}
@@ -382,8 +427,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	}
 
 	public void crearFrameBuscarProducto() {
-		PanelCreacionProducto.getInstancia(frameMain, "FACTURACION")
-				.setVisible(true);
+
+		PanelCreacionProducto.getInstancia(frameMain, "FACTURACION").setVisible(true);
 
 	}
 
@@ -393,15 +438,13 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 	public void cargarFecha(JTextField campoFecha) {
 		String[] fecha = daoVarios.retornarFechaBD();
-		campoFecha.setText(fecha[2] + "/" + fecha[1] + "/" + fecha[0] + "  "
-				+ fecha[3]);
+		campoFecha.setText(fecha[2] + "/" + fecha[1] + "/" + fecha[0] + "  " + fecha[3]);
 	}
 
 	public void crearPanelInfoFactura() {
 		panelInfoFactura = new JPanel();
 		panelInfoFactura.setBounds(740, 15, 250, 70);
-		TitledBorder rotuloInfoFactura = BorderFactory
-				.createTitledBorder("Factura de Venta");
+		TitledBorder rotuloInfoFactura = BorderFactory.createTitledBorder("Factura de Venta");
 		rotuloInfoFactura.setTitleFont(new Font("Arial", 1, 17));
 		rotuloInfoFactura.setTitleColor(new Color(0, 0, 128));
 		panelInfoFactura.setBorder(rotuloInfoFactura);
@@ -425,17 +468,14 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	public void cargarCliente() {
 		Persona persona = daoPersona.buscarPorCodigo(idClienteCargado);
 		System.out.println("ACA LLEGA ESTE ID " + idClienteCargado);
-		System.out.println("PERSONA " + persona.getNombre() + " dcouemnto "
-				+ persona.getNumeroDocumento());
-		labelClienteSeleccionado.setText(persona.getNombre() + " "
-				+ persona.getApellido() + " " + persona.getNumeroDocumento()
-				+ "");
+		System.out.println("PERSONA " + persona.getNombre() + " dcouemnto " + persona.getNumeroDocumento());
+		labelClienteSeleccionado.setText(persona.getNombre() + " " + persona.getApellido() + " " + persona.getNumeroDocumento() + "");
 		labelInfoCliente.setVisible(true);
 	}
 
 	public void cargarNumeroFactura() {
-		Varios varioPrefijo = daoVarios.consultar("501");
-		Varios varioNumero = daoVarios.consultar("503");
+		Varios varioPrefijo = daoVarios.consultar("991");
+		Varios varioNumero = daoVarios.consultar("992");
 
 		campoPrefijoFactura.setText(varioPrefijo.getnombreVario());
 		campoNumeroFactura.setText(varioNumero.getnombreVario());
@@ -444,16 +484,14 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	public void crearPanelListaProductos() {
 
 		panelListaProductos = new JPanel();
-		panelListaProductos.setBounds(10, 100, 980, 410);
-		TitledBorder rotuloTitulo = BorderFactory
-				.createTitledBorder("Articulos");
+		panelListaProductos.setBounds(10, 100, 980, 350);
+		TitledBorder rotuloTitulo = BorderFactory.createTitledBorder("Articulos");
 		rotuloTitulo.setTitleColor(new Color(0, 0, 128));
 		panelListaProductos.setBorder(rotuloTitulo);
 		panelListaProductos.setLayout(null);
 		add(panelListaProductos);
 
-		final String[] columnNames1 = { "ITEM", "PRODUCTO", "#", "VU SIN iva",
-				"Sub SIN iva", "VU CON iva", "Sub CON iva", "" };
+		final String[] columnNames1 = { "ITEM", "PRODUCTO", "#", "VU SIN iva", "Sub SIN iva", "VU CON iva", "Sub CON iva", "" };
 
 		modeloTabla = new ModeloTabla(columnNames1, 0, this);
 		tablaProductos = new JTable(modeloTabla);
@@ -466,7 +504,7 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		tablaProductos.getColumnModel().getColumn(7).setPreferredWidth(0);
 
 		scrollListaProductos = new JScrollPane(tablaProductos);
-		scrollListaProductos.setBounds(10, 20, 960, 380);
+		scrollListaProductos.setBounds(10, 20, 960, 320);
 		panelListaProductos.add(scrollListaProductos);
 		tablaProductos.addMouseListener(this);
 
@@ -479,9 +517,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 	public void crearPanelObservaciones() {
 		panelObservaciones = new JPanel();
-		panelObservaciones.setBounds(10, 510, 720, 130);
-		TitledBorder rotuloTitulo = BorderFactory
-				.createTitledBorder("Observaciones");
+		panelObservaciones.setBounds(10, 450, 720, 130);
+		TitledBorder rotuloTitulo = BorderFactory.createTitledBorder("Observaciones");
 		rotuloTitulo.setTitleColor(new Color(0, 0, 128));
 		panelObservaciones.setBorder(rotuloTitulo);
 		panelObservaciones.setLayout(null);
@@ -496,9 +533,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 	public void crearPanelCostoFactura() {
 		panelCostoFactura = new JPanel();
-		panelCostoFactura.setBounds(740, 510, 250, 190);
-		TitledBorder rotuloInfoFactura = BorderFactory
-				.createTitledBorder("Costo");
+		panelCostoFactura.setBounds(740, 450, 250, 190);
+		TitledBorder rotuloInfoFactura = BorderFactory.createTitledBorder("Costo");
 		rotuloInfoFactura.setTitleColor(new Color(0, 0, 128));
 		panelCostoFactura.setBorder(rotuloInfoFactura);
 		panelCostoFactura.setLayout(null);
@@ -510,7 +546,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 		campoSubtotal = new JTextField();
 		campoSubtotal.setBounds(90, 20, 150, 30);
-		campoSubtotal.setEnabled(false);
+		campoSubtotal.setHorizontalAlignment(JTextField.RIGHT);
+		// campoSubtotal.setEnabled(false);
 		panelCostoFactura.add(campoSubtotal);
 
 		labelBase = new JLabel("BASE");
@@ -519,6 +556,11 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 		defaultlistaBase = new DefaultListModel();
 		listaBase = new JList(defaultlistaBase);
+		listaBase.setCellRenderer(new DefaultListCellRenderer() {
+			public int getHorizontalAlignment() {
+				return RIGHT;
+			}
+		});
 		scrollListaBases = new JScrollPane(listaBase);
 		scrollListaBases.setBounds(90, 55, 150, 50);
 		panelCostoFactura.add(scrollListaBases);
@@ -529,7 +571,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 		campoIva = new JTextField();
 		campoIva.setBounds(90, 110, 150, 30);
-		campoIva.setEnabled(false);
+		campoIva.setHorizontalAlignment(JTextField.RIGHT);
+		// campoIva.setEnabled(false);
 		panelCostoFactura.add(campoIva);
 
 		labelTotal = new JLabel("TOTAL");
@@ -538,13 +581,14 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 		campoTotal = new JTextField();
 		campoTotal.setBounds(90, 145, 150, 30);
-		campoTotal.setEnabled(false);
+		campoTotal.setHorizontalAlignment(JTextField.RIGHT);
+		// campoTotal.setEnabled(false);
 		panelCostoFactura.add(campoTotal);
 	}
 
 	public void crearBotonesAcciones() {
 		botonImprimir = new JButton("IMPRIMIR");
-		botonImprimir.setBounds(200, 650, 150, 40);
+		botonImprimir.setBounds(200, 590, 150, 40);
 		botonImprimir.setActionCommand("IMPRIMIRFACTURAVENTA");
 		botonImprimir.addActionListener(frameMain);
 		add(botonImprimir);
@@ -552,18 +596,13 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	}
 
 	public void cargarResultadosCliente() {
-		ArrayList<Persona> listaPersonas = daoPersona
-				.consultarOptimizado(getCampoBusquedaCliente().getText());
+		ArrayList<Persona> listaPersonas = daoPersona.consultarOptimizado(getCampoBusquedaCliente().getText());
 		getModelListResultCliente().clear();
 		String mostrar = "";
 		for (int i = 0; i < listaPersonas.size(); i++) {
-			String documentoFormato = daoVarios.darFormatoNumeros(listaPersonas
-					.get(i).getNumeroDocumento() + "");
-			mostrar = listaPersonas.get(i).getApellido() + " "
-					+ listaPersonas.get(i).getNombre() + " "
-					+ listaPersonas.get(i).getNumeroDocumento();
-			StringTokenizer tk = new StringTokenizer(getCampoBusquedaCliente()
-					.getText(), " ");
+			String documentoFormato = daoVarios.darFormatoNumeros(listaPersonas.get(i).getNumeroDocumento() + "");
+			mostrar = listaPersonas.get(i).getApellido() + " " + listaPersonas.get(i).getNombre() + " " + listaPersonas.get(i).getNumeroDocumento();
+			StringTokenizer tk = new StringTokenizer(getCampoBusquedaCliente().getText(), " ");
 			mostrar = "<html>" + mostrar.toUpperCase() + "</html>";
 			String nuevo = "";
 			String palabra = "";
@@ -572,10 +611,8 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 				nuevo = "<b>" + palabra + "</b>";
 				mostrar = mostrar.replaceAll(palabra, nuevo);
 			}
-			mostrar = mostrar.replaceAll(listaPersonas.get(i)
-					.getNumeroDocumento() + "", documentoFormato);
-			getModelListResultCliente().addElement(
-					new Datos(listaPersonas.get(i).getCodigo(), mostrar));
+			mostrar = mostrar.replaceAll(listaPersonas.get(i).getNumeroDocumento() + "", documentoFormato);
+			getModelListResultCliente().addElement(new Datos(listaPersonas.get(i).getCodigo(), mostrar));
 			mostrar = "";
 		}
 		// if(listaPersonas.size()==1){
@@ -585,29 +622,20 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 	public void cargarResultadosProducto() {
 		// TODO mejorar esta busqueda porque se esta demorando mucho
-		ArrayList<Producto> listaProductos = daoProducto
-				.consultarOptimizado(getCampoBusquedaProducto().getText());
+		ArrayList<Producto> listaProductos = daoProducto.consultarOptimizado(getCampoBusquedaProducto().getText());
 		modelListResultProducto.clear();
 		String mostrar = "";
 		for (int i = 0; i < listaProductos.size(); i++) {
 			// String documentoFormato =
 			// daoVarios.darFormatoNumeros(listaProductos.get(i).getNumeroDocumento()
 			// + "");
-			mostrar = daoVarios.consultarVariosPorCategoriaNivel2(
-					"Tipo de Elemento", listaProductos.get(i)
-							.getIdCategoriaProducto())
-					+ " "
-					+ daoVarios.consultarVariosPorCategoriaNivel2(
-							"Marca Elemento", listaProductos.get(i)
-									.getIdMarcaProducto())
-					+ " "
-					+ listaProductos.get(i).getReferenciaProducto()
-					+ " "
-					+ listaProductos.get(i).getNumeroParteProducto()
-					+ " "
-					+ listaProductos.get(i).getAbreviadoProducto();
-			StringTokenizer tk = new StringTokenizer(getCampoBusquedaProducto()
-					.getText(), " "); // Cambia aquÃ­ el separador
+			mostrar = daoVarios.consultarVariosPorCategoriaNivel2("Tipo de Elemento", Integer.parseInt(listaProductos.get(i).getIdCategoriaProducto())) + " "
+					+ daoVarios.consultarVariosPorCategoriaNivel2("Marca Elemento", Integer.parseInt(listaProductos.get(i).getIdMarcaProducto())) + " " + listaProductos.get(i).getReferenciaProducto()
+					+ " " + listaProductos.get(i).getNumeroParteProducto() + " " + listaProductos.get(i).getAbreviadoProducto();
+			StringTokenizer tk = new StringTokenizer(getCampoBusquedaProducto().getText(), " "); // Cambia
+																									// aquÃ­
+																									// el
+																									// separador
 			mostrar = "<html>" + mostrar.toUpperCase() + "</html>";
 			String nuevo = "";
 			String palabra = "";
@@ -617,8 +645,7 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 				nuevo = "<b>" + palabra + "</b>";
 				mostrar = mostrar.replaceAll(palabra, nuevo);
 			}
-			modelListResultProducto.addElement(new Datos(listaProductos.get(i)
-					.getIdProducto(), mostrar));
+			modelListResultProducto.addElement(new Datos(listaProductos.get(i).getIdProducto(), mostrar));
 			mostrar = "";
 		}
 		// if(listaProductos.size()==1){
@@ -626,37 +653,61 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		// }
 	}
 
-	public void agregarProductoFactura(int idProducto) {
-		Producto productoTempo = daoProducto.buscarPorCodigo(idProducto);
-		productosFactura.add(productoTempo);
-		itemFacturaTempo = new ItemFactura();
-		itemFacturaTempo.setProducto(productoTempo);
-		itemFacturaTempo.setPrecio(productoTempo.getPrecioProducto());
-		itemFacturaTempo.setCantidad(1);
-		ArrayList<Articulo> arrayArticulosTempo = daoArticulo
-				.buscarArticulosPorProductoDisponibles(idProducto + "");
-		if (productoTempo.getTieneSerial() == 0) {
-			if (arrayArticulosTempo.size() > 0) {
-				Articulo articuloTempo = arrayArticulosTempo.get(0);
-				itemFacturaTempo.setArticulo(articuloTempo);
-				itemFacturaTempo.setIdArticulo(articuloTempo.getIdArticulo());
+	public void agregarProductoFactura(Producto productoTempo) {
+
+		ItemFacturaTabla itemTempo = new ItemFacturaTabla();
+		itemTempo.setProducto(productoTempo);
+		itemTempo.setCantidad(1);
+		itemTempo.setNumero(listaItemsFactura.size() + 1);
+
+		ArrayList<Articulo> arrayArticulosTempo = daoArticulo.buscarArticulosPorProductoDisponibles(productoTempo.getIdProducto() + "");
+
+		// DecimalFormat df = new DecimalFormat("#########0" + sep + "00");
+
+		float valorUnitarioSinIva = ((float) itemTempo.getProducto().getPrecioProducto()) / (1 + (itemTempo.getProducto().getIvaProducto() / 100));
+
+		float valorUnitarioConIva = itemTempo.getProducto().getPrecioProducto();
+		System.out.println("VALOR UNITARIO CON IVA " + valorUnitarioConIva);
+		System.out.println(df.format(valorUnitarioConIva));
+
+		itemTempo.setValorUnitarioConIva(valorUnitarioConIva);
+		itemTempo.setValorUnitarioSinIva(valorUnitarioSinIva);
+		itemTempo.setSubtotalSinIva(valorUnitarioSinIva);
+		itemTempo.setSubtotalConIva(valorUnitarioConIva);
+
+		itemTempo.setDescripcion(productoTempo.getIdCategoriaProducto() + " " + productoTempo.getIdMarcaProducto() + " " + productoTempo.getReferenciaProducto());
+
+		if (modeloTabla.getRowCount() > 0)
+			modeloTabla.removeRow(modeloTabla.getRowCount() - 1);
+		if (itemTempo.getProducto().getTieneSerial() == 0) {
+			int existe = buscarProductoYaAgregado(productoTempo);
+			if (existe == -1) {
+
+				modeloTabla.addRow(new String[] { itemTempo.getNumero() + "", itemTempo.getDescripcion(), itemTempo.getCantidad() + "", df.format(valorUnitarioSinIva) + "",
+						df.format(valorUnitarioSinIva) + "", df.format(valorUnitarioConIva) + "", df.format(valorUnitarioConIva) + "", itemTempo.getProducto().getIdProducto() + "" });
+				listaItemsFactura.add(itemTempo);
+				colocarGarantiasObservaciones();
+				if (arrayArticulosTempo.size() <= 0) {
+					JOptionPane.showMessageDialog(null, "NO HAY ARTICULOS REGISTRADOS PARA ESTE PRODUCTO");
+				}
 			} else {
-				itemFacturaTempo.setArticulo(null);
-				itemFacturaTempo.setIdArticulo(0);
-				JOptionPane.showMessageDialog(null,
-						"NO HAY ARTICULOS REGISTRADOS PARA ESTE PRODUCTO");
-				modeloTabla.getProductosFactura().add(itemFacturaTempo);
-				modeloTabla.actualizarDatos();
-				calcularValorFactura();
+				ItemFacturaTabla temporal = listaItemsFactura.get(existe);
+				//listaItemsFactura.remove(existe);
+				temporal.setCantidad(temporal.getCantidad() + 1);
+
+				temporal.setSubtotalSinIva(temporal.getCantidad() * temporal.getValorUnitarioSinIva());
+				temporal.setSubtotalConIva(temporal.getCantidad() * temporal.getValorUnitarioConIva());
+				modeloTabla.setValueAt(temporal.getCantidad() + "", existe, 2);
+				modeloTabla.setValueAt(temporal.getSubtotalSinIva() + "", existe, 4);
+				modeloTabla.setValueAt(temporal.getSubtotalConIva() + "", existe, 6);
+				listaItemsFactura.set(existe, temporal);
+
 			}
-			colocarGarantiasObservaciones();
 		} else {
-			panelTempo = new PanelSeleccionArticulo(frameMain);
+			panelTempo = new PanelSeleccionArticulo(this, productoTempo);
 			ArrayList<String> arrayTempo = new ArrayList<String>();
 
 			for (int i = 0; i < arrayArticulosTempo.size(); i++) {
-				System.out.println("ESTADO DEL PRODUCTO "
-						+ arrayArticulosTempo.get(i).getEstado());
 				arrayTempo.add(arrayArticulosTempo.get(i).getNumeroSerie());
 			}
 
@@ -665,64 +716,96 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 
 		}
 
+		// tablaProductos.setRowHeight(0, 100);
+
+		calcularSubtotalFactura();
+		crearAproximacionPeso();
 		// actualizarTabla();a
+
 	}
 
-	public void cargarProductoNumeroSerie() {
+	public void agregarProductoFacturaNumeroSerie(Producto productoTempo) {
 		if (panelTempo != null) {
+			Articulo temporal = new Articulo();
 			int numero = 0;
 			if (panelTempo.numeroSerieSeleccionado() == 0) {
 				String texto = JOptionPane.showInputDialog("Numero de serie:");
 				if (texto != null && !texto.equals("")) {
-					Articulo temporal = new Articulo();
-					temporal.setIdProductoArticulo(itemFacturaTempo
-							.getProducto().getIdProducto());
+					temporal.setIdProductoArticulo(productoTempo.getIdProducto());
 					temporal.setEstado(0);
 					temporal.setIdProveedor("0");
 					temporal.setCostoArticulo(0);
 					String[] fecha = daoVarios.retornarFechaBD();
-					temporal.setFechaIngreso(fecha[2] + "-" + fecha[1] + "-"
-							+ fecha[0] + " " + fecha[3]);
+					temporal.setFechaIngreso(fecha[2] + "-" + fecha[1] + "-" + fecha[0] + " " + fecha[3]);
 					temporal.setIdDocumentoSoporte("1");
 					temporal.setIdSitio("1");
 					temporal.setNumeroSerie(texto);
 					daoArticulo.insert(temporal);
-					numero = daoProducto.m_DAOConnectionLogin
-							.devolverUltimoID();
+					numero = daoProducto.m_DAOConnectionLogin.devolverUltimoID();
 				}
 			} else {
 				numero = panelTempo.numeroSerieSeleccionado();
 			}
+			if (modeloTabla.getRowCount() > 0)
+				modeloTabla.removeRow(modeloTabla.getRowCount() - 1);
 
 			if (numero != 0) {
-				itemFacturaTempo.setIdArticulo(numero);
-				itemFacturaTempo.setArticulo(daoArticulo
-						.consultar(itemFacturaTempo.getIdArticulo() + ""));
 
-				boolean existe = false;
-				for (int i = 0; i < modeloTabla.getProductosFactura().size(); i++) {
-					ItemFactura tempo = modeloTabla.getProductosFactura()
-							.get(i);
-					if (tempo.getIdArticulo() == panelTempo
-							.numeroSerieSeleccionado()) {
-						JOptionPane.showMessageDialog(null,
-								"Ese articulo ya se agrego");
-						panelTempo.setVisible(true);
-						existe = true;
-						break;
-					}
+				Articulo articulo = daoArticulo.consultar(numero + "");
+
+				int existe = buscarProductoYaAgregado(productoTempo);
+				if (existe == -1) {
+
+					ItemFacturaTabla itemTempo = new ItemFacturaTabla();
+					itemTempo.setProducto(productoTempo);
+					itemTempo.setCantidad(1);
+					itemTempo.setNumero(listaItemsFactura.size() + 1);
+
+					itemTempo.articulos = new ArrayList<Articulo>();
+					itemTempo.articulos.add(articulo);
+
+					float valorUnitarioSinIva = ((float) itemTempo.getProducto().getPrecioProducto()) / (1 + (itemTempo.getProducto().getIvaProducto() / 100));
+
+					float valorUnitarioConIva = itemTempo.getProducto().getPrecioProducto();
+
+					itemTempo.setValorUnitarioSinIva(valorUnitarioSinIva);
+					itemTempo.setValorUnitarioConIva(valorUnitarioConIva);
+					itemTempo.setSubtotalConIva(valorUnitarioConIva);
+					itemTempo.setSubtotalSinIva(valorUnitarioSinIva);
+
+					itemTempo.setDescripcion(productoTempo.getIdCategoriaProducto() + " " + productoTempo.getIdMarcaProducto() + " " + productoTempo.getReferenciaProducto());
+
+					modeloTabla.addRow(new String[] { itemTempo.getNumero() + "", itemTempo.getDescripcion(), itemTempo.getCantidad() + "", df.format(valorUnitarioSinIva) + "",
+							df.format(valorUnitarioSinIva) + "", df.format(valorUnitarioConIva) + "", df.format(valorUnitarioConIva) + "", itemTempo.getProducto().getIdProducto() + "" });
+					listaItemsFactura.add(itemTempo);
+				} else {
+					ItemFacturaTabla tempoAgregar = listaItemsFactura.get(existe);
+					//listaItemsFactura.remove(existe);
+					tempoAgregar.articulos.add(articulo);
+					tempoAgregar.setCantidad(tempoAgregar.getCantidad() + 1);
+					tempoAgregar.setSubtotalSinIva(tempoAgregar.getCantidad() * tempoAgregar.getValorUnitarioSinIva());
+					tempoAgregar.setSubtotalConIva(tempoAgregar.getCantidad() * tempoAgregar.getValorUnitarioConIva());
+					modeloTabla.setValueAt(tempoAgregar.getCantidad() + "", existe, 2);
+					modeloTabla.setValueAt(tempoAgregar.getSubtotalSinIva() + "", existe, 4);
+					modeloTabla.setValueAt(tempoAgregar.getSubtotalConIva() + "", existe, 6);
+					listaItemsFactura.set(existe, tempoAgregar);
+
 				}
-				if (!existe) {
-					modeloTabla.getProductosFactura().add(itemFacturaTempo);
-					modeloTabla.actualizarDatos();
-					calcularValorFactura();
-					panelTempo.setVisible(false);
-					panelTempo = null;
-					colocarGarantiasObservaciones();
-				}
+				ocultarSeleccionNumeroSerie();
+				colocarGarantiasObservaciones();
+				calcularSubtotalFactura();
+				crearAproximacionPeso();
 			}
 		}
-		actualizarTabla();
+	}
+
+	public int buscarProductoYaAgregado(Producto producto) {
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			if (listaItemsFactura.get(i).getProducto().getIdProducto() == producto.getIdProducto()) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	public void ocultarSeleccionNumeroSerie() {
@@ -733,58 +816,19 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	// guardar productos de la factura para poder editar la cantidad y el precio
 	// al que se deja
 
-	public void actualizarTabla() {
-		// while (modeloTabla.getRowCount() != 0) {
-		// modeloTabla.removeRow(0);
-		// }
-		for (int i = 0; i < productosFactura.size(); i++) {
-
-			int valorUnitarioSinIva = (int) (productosFactura.get(i)
-					.getCostoProducto() * (1 + (productosFactura.get(i)
-					.getMargenProducto() / 100)));
-
-			int valorUnitarioConIva = (int) (productosFactura.get(i)
-					.getCostoProducto()
-					* (1 + (productosFactura.get(i).getMargenProducto() / 100)) * (1 + (productosFactura
-					.get(i).getIvaProducto() / 100)));
-
-			if (!existeProductoFactura(productosFactura.get(i)
-					.getDescripcionProducto())) {
-				modeloTabla.addRow(new String[] { (i + 1) + "",
-						productosFactura.get(i).getDescripcionProducto(), "1",
-						valorUnitarioSinIva + "", valorUnitarioSinIva + "",
-						valorUnitarioConIva + "", valorUnitarioConIva + "",
-						productosFactura.get(i).getIdProducto() + "" });
-			}
-		}
-
-	}
-
 	public void calcularCambiosProducto(int row) {
-		Producto producto = daoProducto.buscarPorCodigo(Integer
-				.parseInt(modeloTabla.getValueAt(row, 7) + ""));
-		int subConIva = (int) (Integer.parseInt(modeloTabla.getValueAt(row, 2)
-				+ "") * Integer.parseInt(modeloTabla.getValueAt(row, 5) + ""));
+		Producto producto = daoProducto.buscarPorCodigo(Integer.parseInt(modeloTabla.getValueAt(row, 7) + ""));
 
-		int subSinIva = (int) (Integer.parseInt(modeloTabla.getValueAt(row, 5)
-				+ "") / (1 + (producto.getIvaProducto() / 100)));
-		modeloTabla.setValueAt(subSinIva + "", row, 3);
-		subSinIva = subSinIva
-				* Integer.parseInt(modeloTabla.getValueAt(row, 2) + "");
+		String valorNuevo = (modeloTabla.getValueAt(row, 5) + "").replaceAll(sep+"", "");
 
-		modeloTabla.setValueAt(subConIva + "", row, 6);
-		modeloTabla.setValueAt(subSinIva + "", row, 4);
-	}
+		int subConIva = (int) (Integer.parseInt(modeloTabla.getValueAt(row, 2) + "") * Integer.parseInt(valorNuevo));
 
-	public boolean existeProductoFactura(String mostrar) {
-		for (int i = 0; i < modeloTabla.getRowCount(); i++) {
-			String tempo = (String) modeloTabla.getValueAt(i, 1);
-			if (tempo.equals(mostrar)) {
-				return true;
-			}
-		}
+		int subSinIva = (int) (Integer.parseInt(valorNuevo) / (1 + (producto.getIvaProducto() / 100)));
+		modeloTabla.setValueAt(df.format(subSinIva) + "", row, 3);
+		subSinIva = subSinIva * Integer.parseInt(modeloTabla.getValueAt(row, 2) + "");
 
-		return false;
+		modeloTabla.setValueAt(df.format(subConIva) + "", row, 6);
+		modeloTabla.setValueAt(df.format(subSinIva) + "", row, 4);
 	}
 
 	public void crearFacturaVenta() {
@@ -792,16 +836,13 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		System.out.println("/n/n/n");
 		for (int i = 0; i < modeloTabla.getProductosFactura().size(); i++) {
 			ItemFactura aa = modeloTabla.getProductosFactura().get(i);
-			System.out.println(aa.getProducto().getDescripcionProducto()
-					+ " Cantidad " + aa.getCantidad() + " Precio "
-					+ aa.getPrecio());
+			System.out.println(aa.getProducto().getDescripcionProducto() + " Cantidad " + aa.getCantidad() + " Precio " + aa.getPrecio());
 		}
 
 		FacturaVenta facturaVentaTemporal = new FacturaVenta();
 		boolean correcto = true;
 		if (idClienteCargado == 0) {
-			JOptionPane.showMessageDialog(null,
-					"DEBE SELECCIONAR EL CLIENTE PRIMERO");
+			JOptionPane.showMessageDialog(null, "DEBE SELECCIONAR EL CLIENTE PRIMERO");
 			correcto = false;
 		}
 		facturaVentaTemporal.setIdCliente(idClienteCargado);
@@ -813,129 +854,90 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		facturaVentaTemporal.setFechaAceptada(campoFechaFactura.getText());
 		facturaVentaTemporal.setEstado(0);
 
-		facturaVentaTemporal.setTotalFactura(Double.parseDouble(campoTotal
-				.getText()));
+		facturaVentaTemporal.setTotalFactura(Double.parseDouble(campoTotal.getText()));
 		facturaVentaTemporal.setIva(Double.parseDouble(campoIva.getText()));
 		facturaVentaTemporal.setBaseIva(Double.parseDouble(0 + ""));
-		if (campoPrefijoFactura.getText().equals("")
-				|| campoNumeroFactura.getText().equals("")) {
-			JOptionPane.showMessageDialog(null,
-					"PROBLEMAS CON EL NUMERO y/o PREFIJO DE LA FACTURA");
+		if (campoPrefijoFactura.getText().equals("") || campoNumeroFactura.getText().equals("")) {
+			JOptionPane.showMessageDialog(null, "PROBLEMAS CON EL NUMERO y/o PREFIJO DE LA FACTURA");
 			correcto = false;
 		}
 
-		int seleccion = JOptionPane.showConfirmDialog(
-				null,
-				"¿ES CORRECTO EL NUMERO DE LA FACTURA?\n"
-						+ campoPrefijoFactura.getText() + "-"
-						+ campoNumeroFactura.getText());
+		int seleccion = JOptionPane.showConfirmDialog(null, "¿ES CORRECTO EL NUMERO DE LA FACTURA?\n" + campoPrefijoFactura.getText() + "-" + campoNumeroFactura.getText());
 		if (seleccion == 0 && correcto) {
-			facturaVentaTemporal.setPrefijoFactura(campoPrefijoFactura
-					.getText());
+			facturaVentaTemporal.setPrefijoFactura(campoPrefijoFactura.getText());
 			facturaVentaTemporal.setNumeroFactura(campoNumeroFactura.getText());
 			int idFacturaCreada = daoFacturaVenta.insert(facturaVentaTemporal);
 			Varios varioNum = new Varios();
-			varioNum.setnombreVario((Integer.parseInt(campoNumeroFactura
-					.getText()) + 1) + "");
-			varioNum.setcodVar(503);
+			varioNum.setnombreVario((Integer.parseInt(campoNumeroFactura.getText()) + 1) + "");
+			varioNum.setcodVar(992);
 			daoVarios.editar(varioNum);
 
-			for (int i = 0; i < modeloTabla.getProductosFactura().size(); i++) {
-				ItemFactura itemfacturaGuardar = modeloTabla
-						.getProductosFactura().get(i);
-				itemfacturaGuardar.setIdFactura(idFacturaCreada);
-				if (itemfacturaGuardar.getArticulo() != null) {
-					itemfacturaGuardar.setIdArticulo(itemfacturaGuardar
-							.getArticulo().getIdArticulo());
-					daoArticulo.cambiarEstadoVendido(itemfacturaGuardar
-							.getArticulo().getIdArticulo());
+			for (int i = 0; i < listaItemsFactura.size(); i++) {
+				ItemFacturaTabla itemFacturaTemporal = listaItemsFactura.get(i);
+				ItemFactura itemFacturaGuardar = new ItemFactura();
+				itemFacturaGuardar.setIdFactura(idFacturaCreada);
+
+				itemFacturaGuardar.setIdProducto(itemFacturaTemporal.getProducto().getIdProducto());
+				itemFacturaGuardar.setSubTotal(itemFacturaTemporal.getSubtotalConIva());
+				itemFacturaGuardar.setGarantia(itemFacturaTemporal.getProducto().getGarantiaMeses());
+				itemFacturaGuardar.setIva(itemFacturaTemporal.getSubtotalConIva() - itemFacturaTemporal.getSubtotalSinIva());
+				itemFacturaGuardar.setCantidad(itemFacturaTemporal.getCantidad());
+				itemFacturaGuardar.setPrecio(itemFacturaTemporal.getValorUnitarioConIva());
+
+				if (itemFacturaTemporal.getArticulos().size() > 0) {
+					for (int j = 0; j < itemFacturaTemporal.getArticulos().size(); j++) {
+						itemFacturaGuardar.setIdArticulo(itemFacturaTemporal.getArticulos().get(j).getIdArticulo());
+						daoArticulo.cambiarEstadoVendido(itemFacturaTemporal.getArticulos().get(j).getIdArticulo());
+						daoItemFactura.insert(itemFacturaGuardar);
+						daoProducto.cambiarExistencias(itemFacturaGuardar.getIdProducto(), 1);
+					}
 				} else {
-					itemfacturaGuardar.setIdArticulo(0);
+					itemFacturaGuardar.setIdArticulo(0);
+					daoItemFactura.insert(itemFacturaGuardar);
+					daoProducto.cambiarExistencias(itemFacturaGuardar.getIdProducto(), 1);
 				}
-				itemfacturaGuardar.setIdProducto(itemfacturaGuardar
-						.getProducto().getIdProducto());
-				itemfacturaGuardar.setSubTotal(itemfacturaGuardar.getCantidad()
-						* itemfacturaGuardar.getPrecio());
-				itemfacturaGuardar.setGarantia(itemfacturaGuardar.getProducto()
-						.getGarantiaMeses());
-				itemfacturaGuardar.setIva(itemfacturaGuardar.getProducto()
-						.getIvaProducto());
-				daoItemFactura.insert(itemfacturaGuardar);
-				daoProducto.cambiarExistencias(
-						itemfacturaGuardar.getIdProducto(), -1
-								* itemfacturaGuardar.getCantidad());
 
-				// Varios varioPre = new Varios();
-				// char nuevoPrefijo =
-				// (char)(((int)campoPrefijoFactura.getText().charAt(0))+1);
-				// varioPre.setnombreVario(nuevoPrefijo+"");
-				// varioPre.setcodVar(501);
-				// daoVarios.editar(varioPre);
-
-				System.out.println(itemfacturaGuardar.getProducto()
-						.getDescripcionProducto()
-						+ " Cantidad "
-						+ itemfacturaGuardar.getCantidad()
-						+ " Precio "
-						+ itemfacturaGuardar.getPrecio());
 			}
 
-		}
+			int renglonesNecesarios = calcularRenglonesNecesarios(listaItemsFactura);
+			int numeroFacturas = (int) (((double) renglonesNecesarios / (double) 12) - 0.001);
+			numeroFacturas += 1;
 
-		int renglonesNecesarios = calcularRenglonesNecesarios(modeloTabla
-				.getProductosFactura());
-		int numeroFacturas = (int) (((double) renglonesNecesarios / (double) 12) - 0.001);
-		numeroFacturas += 1;
-
-		if (numeroFacturas > 1) {
-			ArrayList<ItemFactura> listaTempo = new ArrayList<ItemFactura>();
-			int renglonesUtilizados = 0;
-			boolean facturaCreada = false;
-			for (int i = 0; i < modeloTabla.getProductosFactura().size(); i++) {
-				int renglonesUtilizadosProducto = calcularRenglonesNecesarios(modeloTabla
-						.getProductosFactura().get(i).getProducto()
-						.getDescripcionProducto());
-				System.out
-						.println("/////////////////////  LA PRUEBA QUE ESTOY HACIENDO "
-								+ (renglonesUtilizados + renglonesUtilizadosProducto));
-				if ((renglonesUtilizados + renglonesUtilizadosProducto) <= 12) {
-					renglonesUtilizados += renglonesUtilizadosProducto;
-					listaTempo.add(modeloTabla.getProductosFactura().get(i));
-					facturaCreada = false;
-				} else {
-					System.out.println("TAMAÑO DE LA LISTA PARA LA FACTURA "
-							+ listaTempo.size());
-					facturaCreada = true;
+			if (numeroFacturas > 1) {
+				ArrayList<ItemFacturaTabla> listaTempo = new ArrayList<ItemFacturaTabla>();
+				int renglonesUtilizados = 0;
+				boolean facturaCreada = false;
+				for (int i = 0; i < listaItemsFactura.size(); i++) {
+					int renglonesUtilizadosProducto = calcularRenglonesNecesarios(listaItemsFactura.get(i).getDescripcion());
+					if ((renglonesUtilizados + renglonesUtilizadosProducto) <= 12) {
+						renglonesUtilizados += renglonesUtilizadosProducto;
+						listaTempo.add(listaItemsFactura.get(i));
+						facturaCreada = false;
+					} else {
+						System.out.println("TAMAÑO DE LA LISTA PARA LA FACTURA " + listaTempo.size());
+						facturaCreada = true;
+						crearFacturaImpresion(listaTempo);
+						renglonesUtilizados = 0;
+						listaTempo = new ArrayList<ItemFacturaTabla>();
+						i = i - 1;
+					}
+				}
+				if (!facturaCreada) {
 					crearFacturaImpresion(listaTempo);
-					renglonesUtilizados = 0;
-					listaTempo = new ArrayList<ItemFactura>();
-					i = i - 1;
 				}
+			} else {
+				crearFacturaImpresion(listaItemsFactura);
 			}
-			if (!facturaCreada) {
-				crearFacturaImpresion(listaTempo);
-			}
-		} else {
-			crearFacturaImpresion(modeloTabla.getProductosFactura());
-		}
 
-		cerrarFactura();
+			cerrarFactura();
+
+		}
 
 		// System.out.println("FACTURAS QUE TOCA GENERAR " + numeroFacturas);
 	}
 
-	public ArrayList<ItemFactura> generarListaItems(int inicio, int fin) {
-		ArrayList<ItemFactura> listaTempo = new ArrayList<ItemFactura>();
-		if (fin <= modeloTabla.getProductosFactura().size())
-			for (int i = inicio; i < fin; i++) {
-				listaTempo.add(modeloTabla.getProductosFactura().get(i));
-			}
-		return listaTempo;
-	}
-
-	public void crearFacturaImpresion(ArrayList<ItemFactura> listaItems) {
-		SimpleDateFormat formatoDelTexto = new SimpleDateFormat(
-				"yyyy/MM/dd hh:mm:ss");
+	public void crearFacturaImpresion(ArrayList<ItemFacturaTabla> listaItems) {
+		SimpleDateFormat formatoDelTexto = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
 		Date fecha = null;
 		Date fechaVence = null;
@@ -946,27 +948,35 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 			ex.printStackTrace();
 		}
 
-		System.out.println(fecha.toString());
+		String subProductosConIva = retornarSubtotalProductosConIva();
 
-		FrameImpresion frame = new FrameImpresion(listaItems,
-				daoPersona.buscarPorCodigo(idClienteCargado),
-				areaObservaciones.getText(), fecha, fechaVence,
-				campoSubtotal.getText(), campoIva.getText(),
-				campoTotal.getText());
+		if (comboClienteInfoDireccion.getSelectedItem() == null) {
+			direccionSeleccionada = "";
+		} else {
+			direccionSeleccionada = comboClienteInfoDireccion.getSelectedItem() + "";
+		}
+
+		if (comboClienteInfoTelefono.getSelectedItem() == null) {
+			telefonoSeleccionado = "";
+		} else {
+			telefonoSeleccionado = comboClienteInfoTelefono.getSelectedItem() + "";
+		}
+
+		FrameImpresion frame = new FrameImpresion(listaItems, daoPersona.buscarPorCodigo(idClienteCargado), direccionSeleccionada, telefonoSeleccionado, areaObservaciones.getText(), fecha,
+				fechaVence, campoSubtotal.getText(), subProductosConIva, campoIva.getText(), campoTotal.getText(), modeloTabla.getValueAt(modeloTabla.getRowCount() - 1, 4) + "");
 
 		frame.setVisible(true);
 		frame.imprimir();
 	}
 
-	public int calcularRenglonesNecesarios(ArrayList<ItemFactura> listaItems) {
+	public int calcularRenglonesNecesarios(ArrayList<ItemFacturaTabla> listaItems) {
 		Font font = new Font("Arial", Font.PLAIN, 12);
 		FontMetrics metrics = new FontMetrics(font) {
 		};
 		int numeroRenglonesOcupados = 0;
 
 		for (int i = 0; i < listaItems.size(); i++) {
-			Rectangle2D bounds = metrics.getStringBounds(listaItems.get(i)
-					.getProducto().getDescripcionProducto(), null);
+			Rectangle2D bounds = metrics.getStringBounds(listaItems.get(i).getProducto().getDescripcionProducto(), null);
 			int widthInPixels = (int) bounds.getWidth();
 			int renglones = widthInPixels / 450;
 			renglones += 1;
@@ -1000,133 +1010,88 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	// campoBase.setText(totalFactura + "");
 	// }
 
-	public void calcularValorFactura() {
-		int precio = 0;
-		for (int i = 0; i < modeloTabla.getRowCount(); i++) {
-
-			precio += (int) (Float
-					.parseFloat(modeloTabla.getValueAt(i, 3) + ""));
+	public void calcularSubtotalFactura() {
+		float precio = 0;
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			precio += listaItemsFactura.get(i).getSubtotalSinIva();
 		}
-		campoSubtotal.setText(precio + "");
+		DecimalFormat df = new DecimalFormat("#" + sep + "###" + sep + "###" + sep + "###");
+		campoSubtotal.setText(df.format(precio));
+		calcularBasesIvaFactura();
+	}
 
-		precio = 0;
-		String mostrar = "";
-		int contador = 0;
-		int precioIva = 0;
+	public String retornarSubtotalProductosConIva() {
+		int precio = 0;
 		HashMap<Float, Integer> listaBases = new HashMap<Float, Integer>();
-		for (int i = 0; i < modeloTabla.getProductosFactura().size(); i++) {
-			Producto product = modeloTabla.getProductosFactura().get(i)
-					.getProducto();
-			if (product.getIvaProducto() > 0) {
-				// Integer costoBase = Integer.parseInt(Integer
-				// .parseInt(modeloTabla.getValueAt(contador, 3) + "")
-				// * Integer.parseInt(modeloTabla.getValueAt(contador, 2)
-				// + "") + "");
-
-				int costoBase = Integer.parseInt(modeloTabla.getValueAt(
-						contador, 3) + "");
-				costoBase = (int) (costoBase * (product.getIvaProducto() / 100));
-				costoBase = costoBase
-						* Integer.parseInt(modeloTabla.getValueAt(contador, 2)
-								+ "");
-
-				if (listaBases.get(product.getIvaProducto()) != null) {
-					listaBases.put(product.getIvaProducto(),
-							listaBases.get(product.getIvaProducto())
-									+ costoBase);
-				} else {
-					listaBases.put(product.getIvaProducto(), costoBase);
-				}
-				precioIva += costoBase;
-
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			ItemFacturaTabla itemTempo = listaItemsFactura.get(i);
+			if (itemTempo.getProducto().getIvaProducto() > 0) {
+				precio += itemTempo.getSubtotalSinIva();
 			}
-			contador++;
+		}
+		return precio + "";
+	}
+
+	public void calcularBasesIvaFactura() {
+		float precio = 0;
+		HashMap<Float, Float> listaBases = new HashMap<Float, Float>();
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			ItemFacturaTabla itemTempo = listaItemsFactura.get(i);
+			if (itemTempo.getProducto().getIvaProducto() > 0) {
+				float ivaItem = itemTempo.getSubtotalConIva() - itemTempo.getSubtotalSinIva();
+				if (listaBases.get(itemTempo.getProducto().getIvaProducto()) != null) {
+					listaBases.put(itemTempo.getProducto().getIvaProducto(), listaBases.get(itemTempo.getProducto().getIvaProducto()) + ivaItem);
+				} else {
+					listaBases.put(itemTempo.getProducto().getIvaProducto(), ivaItem);
+				}
+			}
 		}
 
 		defaultlistaBase.removeAllElements();
 		Iterator itu = listaBases.entrySet().iterator();
+
+		DecimalFormat df = new DecimalFormat("#" + sep + "###" + sep + "###" + sep + "###",simbolos);
+
 		while (itu.hasNext()) {
-			System.out.println("ENTRA PARA AGREGAR " + defaultlistaBase.size());
 			Map.Entry e = (Map.Entry) itu.next();
-			defaultlistaBase.addElement(e.getKey() + "% " + e.getValue());
+			defaultlistaBase.addElement(e.getKey() + "%    " + df.format(e.getValue()));
+
 			precio += Float.parseFloat(e.getValue() + "");
 		}
+		campoIva.setText(df.format(precio));
 
-		campoIva.setText(precio + "");
-		campoTotal
-				.setText((Integer.parseInt(campoSubtotal.getText()) + (Integer
-						.parseInt(campoIva.getText()))) + "");
-
+		float precioTotal = precio + Float.parseFloat(campoSubtotal.getText().replaceAll(sep+"", ""));
+		campoTotal.setText(df.format(precioTotal));
 	}
 
 	public ArrayList<String> retornarSeriales(int idProducto) {
 		ArrayList<String> temporal = new ArrayList<String>();
 		for (int i = 0; i < modeloTabla.getProductosFactura().size(); i++) {
 			if (modeloTabla.getProductosFactura().get(i).getIdProducto() == (idProducto)) {
-				temporal.add(modeloTabla.getProductosFactura().get(i)
-						.getArticulo().getNumeroSerie());
+				temporal.add(modeloTabla.getProductosFactura().get(i).getArticulo().getNumeroSerie());
 			}
 		}
 
 		return temporal;
 	}
 
-	// public void colocarNumeroSerieObservaciones() {
-	// ArrayList<ItemFactura> listaItemsTempo = modeloTabla
-	// .getProductosFactura();
-	// String mostrar = "";
-	// int contador = 1;
-	// ArrayList<String> tempo;
-	// for (int i = 0; i < listaItemsTempo.size(); i++) {
-	// if (listaItemsTempo.get(i).getProducto().getTieneSerial() == 1) {
-	// mostrar = mostrar + "   Item " + contador + ": ";
-	// mostrar = mostrar
-	// + listaItemsTempo.get(i).getArticulo().getNumeroSerie()
-	// + ",";
-	// }
-	//
-	// contador++;
-	// }
-	// System.out.println("ESTO MUESTRA: " + mostrar + " ---");
-	// areaObservaciones.setText(mostrar);
-	//
-	// }
-
 	public void colocarGarantiasObservaciones() {
-		ArrayList<ItemFactura> listaItemsTempo = modeloTabla
-				.getProductosFactura();
-		HashMap<Integer, String> listaGarantias = new HashMap<Integer, String>();
-		String mostrar = " ";
-		int contador = 1;
-		ArrayList<String> tempo;
-		for (int i = 0; i < listaItemsTempo.size(); i++) {
-			// if (listaItemsTempo.get(i).getProducto().getTieneSerial() == 1) {
-			// mostrar = mostrar + "   Item " + contador + ": ";
-			// mostrar = mostrar
-			// + listaItemsTempo.get(i).getArticulo().getNumeroSerie()
-			// + ",";
-			// }
-			if (listaGarantias.get(listaItemsTempo.get(i).getProducto()
-					.getGarantiaMeses()) != null) {
-				listaGarantias
-						.put(listaItemsTempo.get(i).getProducto()
-								.getGarantiaMeses(),
-								listaGarantias.get(listaItemsTempo.get(i)
-										.getProducto().getGarantiaMeses())
-										+ "," + contador);
-			} else {
-				listaGarantias.put(listaItemsTempo.get(i).getProducto()
-						.getGarantiaMeses(), contador + "");
-			}
 
-			contador++;
+		HashMap<Integer, String> listaGarantias = new HashMap<Integer, String>();
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			if (listaGarantias.get(listaItemsFactura.get(i).getProducto().getGarantiaMeses()) != null) {
+				listaGarantias.put(listaItemsFactura.get(i).getProducto().getGarantiaMeses(), listaGarantias.get(listaItemsFactura.get(i).getProducto().getGarantiaMeses()) + "," + (i + 1));
+			} else {
+				listaGarantias.put(listaItemsFactura.get(i).getProducto().getGarantiaMeses(), (i + 1) + "");
+			}
 		}
+
+		String mostrar = "";
 
 		Iterator itu = listaGarantias.entrySet().iterator();
 		while (itu.hasNext()) {
 			Map.Entry e = (Map.Entry) itu.next();
-			mostrar += "Items:" + e.getValue() + " tienen " + e.getKey()
-					+ " meses -- ";
+			mostrar += "Items:" + e.getValue() + " tienen " + e.getKey() + " meses -- ";
 		}
 
 		areaObservaciones.setText("Garantia: " + mostrar);
@@ -1137,16 +1102,12 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	}
 
 	public void eliminarArticulo(int row) {
-		productosFactura.remove(row);
-//		tablaProductos.removeAll();
-		while (modeloTabla.getRowCount() != 0) {
-			modeloTabla.removeRow(0);
-		}
-		modeloTabla.getProductosFactura().remove(row);
-
-		actualizarTabla();
-		calcularValorFactura();
+		listaItemsFactura.remove(row);
+		modeloTabla.removeRow(row);
+		actualizarNumeroItem();
 		colocarGarantiasObservaciones();
+		calcularSubtotalFactura();
+		actualizarAproximacionPeso();
 
 	}
 
@@ -1156,11 +1117,9 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 			menus[0] = new JMenuItem("Eliminar");
 			menus[0].addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt1) {
-					int seleccion = JOptionPane.showConfirmDialog(null,
-							"¿Esta seguro de Eliminar el articulo");
+					int seleccion = JOptionPane.showConfirmDialog(null, "¿Esta seguro de Eliminar el articulo");
 					if (seleccion == 0) {
-						eliminarArticulo(tablaProductos.rowAtPoint(evt
-								.getPoint()));
+						eliminarArticulo(tablaProductos.rowAtPoint(evt.getPoint()));
 					}
 				}
 			});
@@ -1168,22 +1127,16 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 			menus[1] = new JMenuItem("Descuento");
 			menus[1].addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt1) {
-					String descuentoEscogido = JOptionPane
-							.showInputDialog("¿Porcentaje de descuento que desea hacer");
-					System.out
-							.println("++++++++++++++++++++++++++++++++++++++++++++++++++ descuento "
-									+ descuentoEscogido);
-
-					if (descuentoEscogido != null
-							&& !descuentoEscogido.equals("")) {
+					String descuentoEscogido = JOptionPane.showInputDialog("¿Porcentaje de descuento que desea hacer");
+					System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++ descuento " + descuentoEscogido);
+					if (modeloTabla.validarEntrada(descuentoEscogido) && descuentoEscogido != null && !descuentoEscogido.equals("")) {
 						int descuento = Integer.parseInt(descuentoEscogido);
-						if (descuento > 0) {
-							System.out.println("EL DESCUENTO es del "
-									+ descuento);
-							calcularDescuento(
-									tablaProductos.rowAtPoint(evt.getPoint()),
-									descuento);
+						if (descuento > 0 && descuento < 100) {
+							System.out.println("EL DESCUENTO es del " + descuento);
+							calcularDescuento(tablaProductos.rowAtPoint(evt.getPoint()), descuento);
 						}
+					}else{
+						JOptionPane.showMessageDialog(null, "El descuento debe ser un numero entero");
 					}
 				}
 			});
@@ -1205,71 +1158,217 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 	}
 
 	public void restaurarProducto(int row) {
-		Producto producto = daoProducto.buscarPorCodigo(Integer
-				.parseInt(modeloTabla.getValueAt(row, 7) + ""));
+		Producto producto = daoProducto.buscarPorCodigo(Integer.parseInt(modeloTabla.getValueAt(row, 7) + ""));
 
-		int valorUnitarioSinIva = (int) (producto.getCostoProducto() * (1 + (producto
-				.getMargenProducto() / 100)));
+		float valorUnitarioSinIva = ((float) producto.getPrecioProducto()) / (1 + (producto.getIvaProducto() / 100));
 
-		int valorUnitarioConIva = (int) (producto.getCostoProducto()
-				* (1 + (producto.getMargenProducto() / 100)) * (1 + (producto
-				.getIvaProducto() / 100)));
+		float valorUnitarioConIva = producto.getPrecioProducto();
+
+		ItemFacturaTabla itemTempo = listaItemsFactura.get(row);
+		//listaItemsFactura.remove(row);
+		itemTempo.setCantidad(1);
+		itemTempo.setValorUnitarioConIva(valorUnitarioConIva);
+		itemTempo.setValorUnitarioSinIva(valorUnitarioSinIva);
+		itemTempo.setSubtotalSinIva(valorUnitarioSinIva);
+		itemTempo.setSubtotalConIva(valorUnitarioConIva);
+		listaItemsFactura.set(row, itemTempo);
 
 		modeloTabla.setValueAt("1", row, 2);
-		modeloTabla.setValueAt(valorUnitarioSinIva + "", row, 3);
-		modeloTabla.setValueAt(valorUnitarioSinIva + "", row, 4);
-		modeloTabla.setValueAt(valorUnitarioConIva + "", row, 5);
-		modeloTabla.setValueAt(valorUnitarioConIva + "", row, 6);
-		calcularValorFactura();
+		modeloTabla.setValueAt(df.format(valorUnitarioSinIva) + "", row, 3);
+		modeloTabla.setValueAt(df.format(valorUnitarioSinIva) + "", row, 4);
+		modeloTabla.setValueAt(df.format(valorUnitarioConIva) + "", row, 5);
+		modeloTabla.setValueAt(df.format(valorUnitarioConIva) + "", row, 6);
+		calcularSubtotalFactura();
+	}
+
+	public void actualizarNumeroItem() {
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			ItemFacturaTabla itemTempo = listaItemsFactura.get(i);
+			//listaItemsFactura.remove(i);
+			itemTempo.setNumero(i + 1);
+			listaItemsFactura.set(i,itemTempo);
+			modeloTabla.setValueAt(i + 1, i, 0);
+		}
+	}
+
+	public void actualizarAproximacionPeso() {
+		float calculoDiferencia = 0;
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			calculoDiferencia += listaItemsFactura.get(i).subtotalSinIva;
+		}
+		float subtotal = Float.parseFloat(campoSubtotal.getText().replaceAll(sep+"", ""));
+
+		calculoDiferencia = subtotal - calculoDiferencia;
+		DecimalFormat df = new DecimalFormat("#########0" + mill + "00");
+
+		for (int i = 0; i < modeloTabla.getRowCount(); i++) {
+			String etiqueta = modeloTabla.getValueAt(i, 1) + "";
+			if (etiqueta.equals("APROXIMACION AL PESO")) {
+				modeloTabla.setValueAt(df.format(calculoDiferencia), i, 4);
+				break;
+			}
+		}
+
+	}
+
+	public void actualizarSubtotales(int row) {
+
+		ItemFacturaTabla itemTempo = listaItemsFactura.get(row);
+		//listaItemsFactura.remove(row);
+		float nuevoSubtotalSinIva = (float) itemTempo.getCantidad() * itemTempo.getValorUnitarioSinIva();
+		System.out.println("ACA VA LA PRUEBA " + itemTempo.getValorUnitarioSinIva() + " igual a " + nuevoSubtotalSinIva);
+		float nuevoSubtotalConIva = (float) itemTempo.getCantidad() * itemTempo.getValorUnitarioConIva();
+		itemTempo.setSubtotalSinIva(nuevoSubtotalSinIva);
+		itemTempo.setSubtotalConIva(nuevoSubtotalConIva);
+		listaItemsFactura.set(row,itemTempo);
+		modeloTabla.setValueAt(df.format(nuevoSubtotalSinIva), row, 4);
+		modeloTabla.setValueAt(df.format(nuevoSubtotalConIva), row, 6);
+	}
+
+	public boolean cambiarExistenciasTabla(int row, int valor, boolean interno) {
+//		if (modeloTabla.getRowCount() > 0)
+//			modeloTabla.removeRow(modeloTabla.getRowCount() - 1);
+
+		ItemFacturaTabla itemTempo = listaItemsFactura.get(row);
+		System.out.println("CAMBIA CANTIDAD A "+itemTempo.getProducto().getDescripcionProducto());
+		if (itemTempo.getProducto().getTieneSerial() == 1) {
+			if (!interno) {
+				JOptionPane.showMessageDialog(null, "No se puede cambiar la cantidad a un producto con serial");
+				return false;
+			}
+		} else {
+			//listaItemsFactura.remove(row);
+			itemTempo.setCantidad(valor);
+			listaItemsFactura.set(row, itemTempo);
+		}
+
+		actualizarSubtotales(row);
+		calcularSubtotalFactura();
+		actualizarAproximacionPeso();
+//		crearAproximacionPeso();
+
+		return true;
+	}
+
+	public void cambiarDatoItemFacturaTabla(float dato, int row, int column) {
+
+		if (modeloTabla.getRowCount() > 0)
+			modeloTabla.removeRow(modeloTabla.getRowCount() - 1);
+		ItemFacturaTabla tempo = listaItemsFactura.get(row);
+		//listaItemsFactura.remove(row);
+		switch (column) {
+		case 5:
+			tempo.setValorUnitarioConIva(dato);
+			break;
+		}
+		float iva = (float) 1 + ((float) tempo.getProducto().getIvaProducto() / (float) 100);
+		float temporal = dato / iva;
+
+		tempo.setSubtotalConIva(Float.parseFloat((dato * tempo.getCantidad()) + ""));
+		tempo.setValorUnitarioSinIva(Float.parseFloat((temporal) + ""));
+		tempo.setSubtotalSinIva(Float.parseFloat((temporal * tempo.getCantidad()) + ""));
+		listaItemsFactura.set(row, tempo);
+
+		modeloTabla.setValueAt(df.format(tempo.getValorUnitarioSinIva()) + "", row, 3);
+		modeloTabla.setValueAt(df.format(tempo.getSubtotalSinIva()) + "", row, 4);
+		modeloTabla.setValueAt(df.format(tempo.getSubtotalConIva()) + "", row, 6);
+		calcularSubtotalFactura();
+		crearAproximacionPeso();
+
+	}
+
+	public void crearAproximacionPeso() {
+		float calculoDiferencia = 0;
+		for (int i = 0; i < listaItemsFactura.size(); i++) {
+			calculoDiferencia += listaItemsFactura.get(i).subtotalSinIva;
+		}
+		float subtotal = Float.parseFloat(campoSubtotal.getText().replaceAll(sep+"", ""));
+
+		calculoDiferencia = subtotal - calculoDiferencia;
+		DecimalFormat df = new DecimalFormat("#########0" + mill + "00");
+
+		modeloTabla.addRow(new String[] { "-", "APROXIMACION AL PESO", "", "", df.format(calculoDiferencia), "", "", "" });
+
 	}
 
 	public void calcularDescuento(int row, float descuento) {
-		int precioConDescuento = (int) (Integer.parseInt(modeloTabla
-				.getValueAt(row, 5) + ""));
-		precioConDescuento = (int) (precioConDescuento * (1 - (descuento / 100)));
-		modeloTabla.setValueAt(precioConDescuento, row, 5);
-		calcularCambiosProducto(row);
+		float precioConDescuento = listaItemsFactura.get(row).getValorUnitarioConIva();
+		precioConDescuento = (precioConDescuento * (1 - (descuento / 100)));
+		String precioDesc = ((int) precioConDescuento) + "";
+		System.out.println("PRECIO DESC " + precioDesc);
+		// precioDesc = precioDesc.replaceAll(sep+"", ",");
+		modeloTabla.setValueAt(precioDesc, row, 5);
+		// ItemFacturaTabla tempo = listaItemsFactura.get(row);
+		// listaItemsFactura.remove(row);
+		// tempo.setValorUnitarioConIva(precioConDescuento);
+		// calcularCambiosProducto(row);
+
+		// String sinIva = modeloTabla.getValueAt(row, 4)+"";
+		// sinIva = sinIva.replaceAll(sep+"", "");
+
+		// tempo.setSubtotalSinIva(Float.parseFloat(sinIva));
+		// listaItemsFactura.add(row, tempo);
+		// calcularSubtotalFactura();
+
 	}
 
 	public void cargarCopiaFactura(int idFactura) {
 		FacturaVenta facturaVentaTempo = daoFacturaVenta.consultar(idFactura);
 		daoFacturaVenta.anular(facturaVentaTempo.getIdFactura());
-		ArrayList<ItemFactura> listaItems = daoItemFactura
-				.retornarListaItems(facturaVentaTempo.getIdFactura());
+		ArrayList<ItemFactura> listaItems = daoItemFactura.retornarListaItems(idFactura);
 		cargarProductoArticuloLista(listaItems);
 		idClienteCargado = facturaVentaTempo.getIdCliente();
 		System.out.println("ID DEL CLIENTE " + idClienteCargado);
 		cargarCliente();
-		modeloTabla.actualizarDatos();
-		calcularValorFactura();
+		cargarClienteInfo();
+		calcularSubtotalFactura();
 		colocarGarantiasObservaciones();
+		crearAproximacionPeso();
 	}
 
 	public void cargarProductoArticuloLista(ArrayList<ItemFactura> lista) {
 		DAOArticulo daoArticulo = new DAOArticulo();
 		DAOProducto daoProducto = new DAOProducto();
 		for (int i = 0; i < lista.size(); i++) {
+			Producto tt = daoProducto.buscarPorCodigoVarios(lista.get(i).getIdProducto());
+			ItemFacturaTabla tempo = new ItemFacturaTabla();
+			tempo.setCantidad(lista.get(i).getCantidad());
+			tempo.setNumero(i + 1);
+			tempo.setProducto(tt);
+			tempo.setSubtotalConIva((int) lista.get(i).getSubTotal());
+			tempo.setSubtotalSinIva((int) (lista.get(i).getSubTotal() - lista.get(i).getIva()));
+			tempo.setValorUnitarioConIva((int) (tempo.getSubtotalConIva() / tempo.getCantidad()));
+			tempo.setValorUnitarioSinIva((int) (tempo.getSubtotalSinIva() / tempo.getCantidad()));
+			tempo.setDescripcion(tt.getIdTipoProducto() + " " + tt.getIdCategoriaProducto() + " " + tt.getIdMarcaProducto() + " " + tt.getReferenciaProducto());
+
+			int existe = buscarProductoYaAgregado(tt);
+			if (existe == -1) {
+				modeloTabla.addRow(new String[] { tempo.getNumero() + "", tempo.getDescripcion(), tempo.getCantidad() + "", df.format(tempo.getValorUnitarioSinIva()) + "",
+						df.format(tempo.getValorUnitarioSinIva()) + "", df.format(tempo.getValorUnitarioConIva()) + "", df.format(tempo.getValorUnitarioConIva()) + "",
+						tempo.getProducto().getIdProducto() + "" });
+				if (tt.getTieneSerial() == 1) {
+					tempo.getArticulos().add(daoArticulo.consultar(lista.get(i).getIdArticulo() + ""));
+				}
+				listaItemsFactura.add(tempo);
+				colocarGarantiasObservaciones();
+			} else {
+				ItemFacturaTabla temporal = listaItemsFactura.get(existe);
+				temporal.getArticulos().add(daoArticulo.consultar(lista.get(i).getIdArticulo() + ""));
+				//listaItemsFactura.remove(existe);
+				listaItemsFactura.set(existe, temporal);
+			}
+
 			if (lista.get(i).getIdArticulo() != 0) {
-				lista.get(i).setArticulo(
-						daoArticulo
-								.consultar(lista.get(i).getIdArticulo() + ""));
 				daoArticulo.cambiarEstadoDevuelto(lista.get(i).getIdArticulo());
 			}
-			Producto tempo = daoProducto
-					.consultar(lista.get(i).getIdProducto());
-			lista.get(i).setProducto(tempo);
-			productosFactura.add(tempo);
-			modeloTabla.getProductosFactura().add(lista.get(i));
-			daoProducto.cambiarExistencias(lista.get(i).getIdProducto(), -1
-					* lista.get(i).getCantidad());
+
 		}
 	}
 
 	public ArrayList<String> cargarInfoCliente() {
 		ArrayList<String> listaInfo = new ArrayList<String>();
 
-		ArrayList<Detalle> listaDetalles = daoDetalle
-				.consultarDetalleCompleto(idClienteCargado);
+		ArrayList<Detalle> listaDetalles = daoDetalle.consultarDetalleCompleto(idClienteCargado);
 		Persona persona = daoPersona.buscarPorCodigo(idClienteCargado);
 		listaInfo.add("NO REGISTRA");
 		listaInfo.add("NO REGISTRA");
@@ -1277,8 +1376,7 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		listaInfo.add("NO REGISTRA");
 		for (int i = 0; i < listaDetalles.size(); i++) {
 			Detalle detalleTempo = listaDetalles.get(i);
-			System.out.println("DETALLE  " + detalleTempo.getTipo() + " desc "
-					+ detalleTempo.getDescripcion());
+			System.out.println("DETALLE  " + detalleTempo.getTipo() + " desc " + detalleTempo.getDescripcion());
 			if (detalleTempo.getTipo().equals("Direccion")) {
 				listaInfo.add(0, detalleTempo.getDescripcion());
 				listaInfo.add(1, detalleTempo.getNombreUbicacion());
@@ -1425,8 +1523,7 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		return modelListResultCliente;
 	}
 
-	public void setModelListResultCliente(
-			DefaultListModel modelListResultCliente) {
+	public void setModelListResultCliente(DefaultListModel modelListResultCliente) {
 		this.modelListResultCliente = modelListResultCliente;
 	}
 
@@ -1434,8 +1531,7 @@ public class PanelFacturacion extends JPanel implements MouseListener {
 		return modelListResultProducto;
 	}
 
-	public void setModelListResultProducto(
-			DefaultListModel modelListResultProducto) {
+	public void setModelListResultProducto(DefaultListModel modelListResultProducto) {
 		this.modelListResultProducto = modelListResultProducto;
 	}
 

@@ -164,7 +164,7 @@ public class DAOvarios {
 		return fecha;
 	}
 
-	public String darFormatoNumeros(String numero) {
+	public static String darFormatoNumeros(String numero) {
 		String nuevoNumero = "";
 		NumberFormat numberFormatter;
 

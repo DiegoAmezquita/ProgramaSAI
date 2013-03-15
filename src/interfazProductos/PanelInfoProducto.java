@@ -1035,16 +1035,16 @@ public class PanelInfoProducto extends JPanel {
 			producto.setUPCCodeProducto(fieldUPC.getText());
 			producto.setReferenciaProducto(evitarSQLInjection(fieldReference
 					.getText()));
-			producto.setIdCategoriaProducto(Integer
-					.parseInt(buscarCodigoNivel2("Tipo de Elemento",
+			producto.setIdCategoriaProducto(
+					(buscarCodigoNivel2("Tipo de Elemento",
 							comboBoxCategoryProduct.getSelectedItem() + "")
 							+ ""));
-			producto.setIdMarcaProducto(Integer.parseInt(buscarCodigoNivel2(
+			producto.setIdMarcaProducto((buscarCodigoNivel2(
 					"Marca Elemento", comboBoxBrandProduct.getSelectedItem()
 							+ "")
 					+ ""));
 			producto.setIdTipoProducto(buscarCodigoNivel2("Tipo Producto",
-					comboBoxTypeProduct.getSelectedItem() + ""));
+					comboBoxTypeProduct.getSelectedItem() + "")+"");
 			producto.setNumeroParteProducto(evitarSQLInjection(fieldPartNumber
 					.getText()));
 
@@ -1154,13 +1154,13 @@ public class PanelInfoProducto extends JPanel {
 
 		comboBoxBrandProduct.setSelectedItem(daoVarios
 				.consultarVariosPorCategoriaNivel2("Marca Elemento",
-						productoResultado.getIdMarcaProducto()));
+						Integer.parseInt(productoResultado.getIdMarcaProducto())));
 		comboBoxCategoryProduct.setSelectedItem(daoVarios
 				.consultarVariosPorCategoriaNivel2("Tipo de Elemento",
-						productoResultado.getIdCategoriaProducto()));
+						Integer.parseInt(productoResultado.getIdCategoriaProducto())));
 		comboBoxTypeProduct.setSelectedItem(daoVarios
 				.consultarVariosPorCategoriaNivel2("Tipo Producto",
-						productoResultado.getIdTipoProducto()));
+						Integer.parseInt(productoResultado.getIdTipoProducto())));
 
 		generarAbreviado();
 		desbloquearEdicion();

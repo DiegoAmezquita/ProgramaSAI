@@ -185,6 +185,7 @@ public class PanelNumeroSerie extends JDialog implements ActionListener {
 			if (campoNumeroSerie.getText().equals("")) {
 				modeloListaNumerosSerie.remove(posicion);
 			} else {
+				modeloListaNumerosSerie.remove(posicion);
 				modeloListaNumerosSerie.add(posicion,
 						campoNumeroSerie.getText());
 			}

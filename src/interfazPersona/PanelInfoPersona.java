@@ -441,8 +441,7 @@ public class PanelInfoPersona extends JPanel {
 			persona.setTipo(getComboBoxTypePersona().getSelectedIndex() + 1);
 			persona.setTipoDocumento(getComboBoxTypeDocument()
 					.getSelectedIndex() + 1);
-			persona.setNumeroDocumento(Integer
-					.parseInt(getFieldNumberDocument().getText()));
+			persona.setNumeroDocumento(getFieldNumberDocument().getText());
 			if (persona.getTipo() != 1) {
 				persona.setDigitoChequeo(Integer
 						.parseInt(getFieldIdentificationNumber().getText()));
